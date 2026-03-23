@@ -1,12 +1,11 @@
 import {
   useTradeSettings,
   PLATFORMS,
-  LEAGUES,
   STATUS_OPTIONS,
 } from '../../data/TradeSettingsContext';
 
 export default function TradeSettings() {
-  const { settings, updateSetting } = useTradeSettings();
+  const { settings, updateSetting, leagues } = useTradeSettings();
 
   return (
     <div className="trade-settings">
@@ -35,7 +34,7 @@ export default function TradeSettings() {
             value={settings.league}
             onChange={(e) => updateSetting('league', e.target.value)}
           >
-            {LEAGUES.map((l) => (
+            {leagues.map((l) => (
               <option key={l.value} value={l.value}>{l.label}</option>
             ))}
           </select>
