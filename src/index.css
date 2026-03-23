@@ -354,6 +354,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .trade-settings__icon {
   font-size: 13px;
+  display: none;
 }
 .trade-settings__title {
   font-family: var(--font-display);
@@ -372,11 +373,12 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0;
 }
 .trade-setting__label {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--outline-variant);
+  display: none;
   padding-left: 4px;
   line-height: 1;
   margin-bottom: 2px;
@@ -388,11 +390,10 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--on-surface);
   font-family: var(--font-body);
   font-size: 11px;
-  padding: 4px 8px;
+  padding: 3px 6px;
   cursor: pointer;
   transition: all var(--transition);
   min-width: 0;
-  max-width: 140px;
 }
 .trade-setting__select:hover {
   border-color: var(--primary);

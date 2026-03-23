@@ -309,7 +309,7 @@ export default function TwoNotablePage() {
             </div>
 
             <div className="mode-setup__diagram">
-              <ClusterDiagram size={140} mode={diagramMode} passiveCount={passiveCount} />
+              <ClusterDiagram size={180} mode={diagramMode} passiveCount={passiveCount} />
               <div className="diagram-legend-compact">
                 {mode === 'split' ? (
                   <>
