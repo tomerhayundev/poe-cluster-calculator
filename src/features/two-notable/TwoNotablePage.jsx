@@ -243,7 +243,7 @@ export default function TwoNotablePage() {
         {/* Block 2: Mode Setup (controls + diagram side by side) */}
         <div className="section">
           <div className="section-header">
-            <span className="section-icon">◆</span>
+
             <h3 className="section-title">Mode</h3>
             <HelpTip text="Two Sides: pick positions 1 & 3. Side + Middle (Split Personality): pick one of each, tool finds the third. Single Notable: explore options for one." />
           </div>
@@ -326,7 +326,7 @@ export default function TwoNotablePage() {
         {/* Block 3: Notable Selection */}
         <div className="section">
           <div className="section-header">
-            <span className="section-icon">◆</span>
+
             <h3 className="section-title">Notable Selection</h3>
             {mode !== 'split' && enabledCount > 0 && (
               <span className="notable-count-badge">
@@ -430,7 +430,6 @@ export default function TwoNotablePage() {
         ) : (
           <div className="section section--results">
             <div className="section-header">
-              <span className="section-icon section-icon--active">◆</span>
               <h3 className="section-title">
                 {results.mode === 'split'
                   ? 'Split Personality Results'

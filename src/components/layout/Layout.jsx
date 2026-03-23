@@ -4,8 +4,8 @@ import { useTradeSettings } from '../../data/TradeSettingsContext';
 import { APP_VERSION } from '../../data/version';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Calculator', icon: '◆' },
-  { to: '/trade', label: 'Trade', icon: '⬡' },
+  { to: '/', label: 'Calculator' },
+  { to: '/trade', label: 'Trade' },
 ];
 
 function getPageTitle(pathname) {
@@ -41,7 +41,6 @@ export default function Layout({ children }) {
               }
               end={item.to === '/'}
             >
-              <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
             </NavLink>
           ))}

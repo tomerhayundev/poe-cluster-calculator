@@ -2158,9 +2158,11 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-footer { display: none; }
   .main-area { margin-left: 0; }
   .main-content { padding: 16px; }
-  .topbar { padding: 8px 10px; flex-wrap: wrap; gap: 8px; align-items: center; }
-  #topbar-slot { order: -1; width: 100%; }
-  .topbar-right { width: 100%; justify-content: space-between; }
+  .topbar { padding: 10px 12px; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-start; }
+  #topbar-slot { width: 100%; margin-bottom: 2px; }
+  .topbar-right { width: 100%; }
+  .trade-settings { width: 100%; }
+  .trade-settings__controls { width: 100%; }
   .topbar-title { display: none; }
   .topbar-right { gap: 4px; }
   .topbar-btn { display: none; }
