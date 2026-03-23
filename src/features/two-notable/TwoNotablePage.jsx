@@ -8,6 +8,7 @@ import { calculateTwoNotables, calculateSingleNotable, calculateSplitAuto, getVa
 import ClusterDiagram from '../../components/ui/ClusterDiagram';
 import PopularClusters from '../../components/ui/PopularClusters';
 import Toast from '../../components/ui/Toast';
+import HelpTip from '../../components/ui/HelpTip';
 import { readUrlState, buildShareUrl, copyToClipboard } from '../../hooks/useUrlState';
 
 const MODES = [
@@ -238,6 +239,7 @@ export default function TwoNotablePage() {
           <div className="section-header">
             <span className="section-icon">◆</span>
             <h3 className="section-title">Mode</h3>
+            <HelpTip text="Choose how to select your notables. Two Sides picks positions 1 & 3. Side + Middle picks one of each. Single Notable explores one." />
           </div>
           <div className="mode-toggle">
             {MODES.map((m) => (
@@ -256,7 +258,7 @@ export default function TwoNotablePage() {
 
           {/* Passive Count Selector */}
           <div className="passive-count-row">
-            <label className="passive-count-label">Passives:</label>
+            <label className="passive-count-label">Passives: <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." /></label>
             <div className="passive-count-options">
               {PASSIVE_COUNTS.map((n) => (
                 <button
@@ -287,6 +289,7 @@ export default function TwoNotablePage() {
                   onClick={() => setSmartMode(false)}
                 >Sandbox</button>
               </div>
+              <HelpTip text="Smart filters dropdowns to only show valid combinations. Sandbox shows all notables without restrictions." />
               {mode !== 'split' && enabledCount > 0 && (
                 <span className="notable-count-badge">
                   {enabledCount} active
@@ -351,7 +354,7 @@ export default function TwoNotablePage() {
               <div className="input-action">
                 {isSingleMode && (
                   <div className="position-selector">
-                    <label className="position-label">I want this notable on:</label>
+                    <label className="position-label">I want this notable on: <HelpTip text="Side (1 or 3) means the notable is on the outer ring. Middle (2) means it sits between two side notables — or alone as auto-middle." /></label>
                     <div className="position-options">
                       <button
                         className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
