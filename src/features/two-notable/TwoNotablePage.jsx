@@ -200,16 +200,18 @@ export default function TwoNotablePage() {
   if (mode === 'split') diagramMode = 'split';
   else if (isSingleMode && singlePosition === 'middle') diagramMode = 'single-middle';
 
-  const [topbarSlot, setTopbarSlot] = useState(null);
+  const [sidebarSlot, setSidebarSlot] = useState(null);
+  const [mobileSlot, setMobileSlot] = useState(null);
   useEffect(() => {
-    setTopbarSlot(document.getElementById('topbar-slot'));
+    setSidebarSlot(document.getElementById('smart-toggle-slot'));
+    setMobileSlot(document.getElementById('smart-toggle-slot-mobile'));
   }, []);
 
   return (
     <div className="page-columns">
-      {/* Smart/Sandbox toggle in topbar via portal */}
-      {topbarSlot && createPortal(
-        <div className="smart-toggle-header">
+      {/* Smart/Sandbox toggle — sidebar on desktop, nav on mobile */}
+      {sidebarSlot && createPortal(
+        <div className="smart-toggle-sidebar">
           <div className="smart-toggle">
             <button
               className={`smart-toggle__btn ${smartMode ? 'smart-toggle__btn--active' : ''}`}
@@ -222,7 +224,22 @@ export default function TwoNotablePage() {
           </div>
           <HelpTip text="Smart filters dropdowns to only show valid combinations. Sandbox shows all notables without restrictions." />
         </div>,
-        topbarSlot
+        sidebarSlot
+      )}
+      {mobileSlot && createPortal(
+        <div className="smart-toggle-mobile">
+          <div className="smart-toggle">
+            <button
+              className={`smart-toggle__btn ${smartMode ? 'smart-toggle__btn--active' : ''}`}
+              onClick={() => setSmartMode(true)}
+            >Smart</button>
+            <button
+              className={`smart-toggle__btn ${!smartMode ? 'smart-toggle__btn--active' : ''}`}
+              onClick={() => setSmartMode(false)}
+            >Sandbox</button>
+          </div>
+        </div>,
+        mobileSlot
       )}
 
       {/* LEFT COLUMN — Input */}

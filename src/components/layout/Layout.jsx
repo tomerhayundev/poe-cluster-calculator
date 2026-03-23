@@ -44,7 +44,10 @@ export default function Layout({ children }) {
               <span className="nav-label">{item.label}</span>
             </NavLink>
           ))}
+          <div id="smart-toggle-slot-mobile"></div>
         </nav>
+
+        <div id="smart-toggle-slot"></div>
 
         <div className="sidebar-footer">
           <p className="sidebar-footer__credit">
@@ -63,7 +66,6 @@ export default function Layout({ children }) {
       <div className="main-area">
         <header className="topbar">
           <h2 className="topbar-title">{pageTitle}</h2>
-          <div id="topbar-slot"></div>
           <div className="topbar-right">
             <TradeSettings />
             <a
