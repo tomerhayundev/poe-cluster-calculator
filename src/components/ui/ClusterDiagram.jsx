@@ -1,35 +1,60 @@
 /**
- * Original SVG cluster jewel diagram showing positions 1, 2, 3
- * Replaces the copied image from the original project.
+ * Original SVG cluster jewel diagram — accurate 8-passive Large Cluster Jewel layout.
+ *
+ * Correct clockwise layout from entry socket at bottom:
+ *   Socket(entry) → Small → Notable1(green) → Small → JewelSocket → Notable2(red) → JewelSocket → Small → Notable3(green) → Small → back to Socket
+ *
+ * That's 10 ring positions evenly spaced at 36° apart.
+ * The entry socket sits below the ring, connected by a short line.
  */
 export default function ClusterDiagram({ size = 200 }) {
   const cx = 100;
   const cy = 100;
-  const r = 70; // main ring radius
-  const nodeR = 16; // node circle radius
-  const smallR = 8; // small passive radius
+  const r = 70;
+  const notableR = 15;
+  const smallR = 7;
+  const jewelSocketR = 10;
 
-  // Positions on the ring (clock positions)
-  // Pos 1 = bottom-left (7 o'clock), Pos 2 = top (12 o'clock), Pos 3 = bottom-right (5 o'clock)
-  const angle1 = (210 * Math.PI) / 180; // 7 o'clock
-  const angle2 = (90 * Math.PI) / 180;  // 12 o'clock (top)
-  const angle3 = (330 * Math.PI) / 180; // 5 o'clock
+  // 10 positions on the ring, evenly spaced 36° apart.
+  // Position 0 = bottom center (6 o'clock, where entry connects).
+  // Going CLOCKWISE: 0→1→2→...→9
+  // In SVG, Y grows downward. To go clockwise from bottom:
+  //   bottom = 90° in SVG coords (cos90=0, sin90=1 → cy+r = bottom)
+  //   clockwise in SVG = subtract angle
+  function ringPos(index) {
+    const angleDeg = 90 - index * 36; // clockwise from bottom
+    const angleRad = (angleDeg * Math.PI) / 180;
+    return {
+      x: cx + r * Math.cos(angleRad),
+      y: cy + r * Math.sin(angleRad),
+    };
+  }
 
-  const pos1 = { x: cx + r * Math.cos(angle1), y: cy - r * Math.sin(angle1) };
-  const pos2 = { x: cx + r * Math.cos(angle2), y: cy - r * Math.sin(angle2) };
-  const pos3 = { x: cx + r * Math.cos(angle3), y: cy - r * Math.sin(angle3) };
+  // Ring positions (clockwise from bottom):
+  // 0: entry point (bottom, where socket connects — no node drawn here, just the arc)
+  // 1: small passive
+  // 2: Notable 1 (desired, green) — left side
+  // 3: small passive
+  // 4: Jewel socket — upper-left
+  // 5: Notable 2 (undesired, red) — top
+  // 6: Jewel socket — upper-right
+  // 7: small passive
+  // 8: Notable 3 (desired, green) — right side
+  // 9: small passive
 
-  // Small passives between notable positions
-  const smallAngles = [150, 180, 240, 270, 0, 30, 60, 120].map(
-    (deg) => (deg * Math.PI) / 180
-  );
-  const smallNodes = smallAngles.map((a) => ({
-    x: cx + r * Math.cos(a),
-    y: cy - r * Math.sin(a),
-  }));
+  const small1 = ringPos(1);
+  const notable1 = ringPos(2);
+  const small2 = ringPos(3);
+  const jsocket1 = ringPos(4);
+  const notable2 = ringPos(5);
+  const jsocket2 = ringPos(6);
+  const small3 = ringPos(7);
+  const notable3 = ringPos(8);
+  const small4 = ringPos(9);
 
-  // Jewel socket at bottom center
-  const socketPos = { x: cx, y: cy + r + 28 };
+  // Entry socket below the ring
+  const entryPoint = ringPos(0);
+  const socketPos = { x: cx, y: cy + r + 26 };
 
   return (
     <svg
@@ -39,7 +64,6 @@ export default function ClusterDiagram({ size = 200 }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* Glow filters */}
         <filter id="glow-green" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
@@ -61,8 +85,14 @@ export default function ClusterDiagram({ size = 200 }) {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
 
-        {/* Gradients */}
         <radialGradient id="desired-grad" cx="40%" cy="35%">
           <stop offset="0%" stopColor="#6aff6a" />
           <stop offset="100%" stopColor="#1a7a1a" />
@@ -79,131 +109,150 @@ export default function ClusterDiagram({ size = 200 }) {
           <stop offset="0%" stopColor="#888" />
           <stop offset="100%" stopColor="#444" />
         </radialGradient>
+        <radialGradient id="jewelsocket-grad" cx="40%" cy="35%">
+          <stop offset="0%" stopColor="#6a9aff" />
+          <stop offset="100%" stopColor="#1a3a7a" />
+        </radialGradient>
       </defs>
 
-      {/* Background ring */}
+      {/* Ring path */}
       <circle
         cx={cx}
         cy={cy}
         r={r}
         fill="none"
-        stroke="#3a3a52"
+        stroke="#4a4a5e"
         strokeWidth="3"
-        opacity="0.6"
+        opacity="0.7"
       />
 
-      {/* Ring arc segments (connecting lines between nodes) */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        stroke="#555"
-        strokeWidth="2"
-        strokeDasharray="4 6"
-        opacity="0.4"
-      />
-
-      {/* Connection to socket */}
+      {/* Connection line from ring bottom to entry socket */}
       <line
-        x1={cx}
-        y1={cy + r}
+        x1={entryPoint.x}
+        y1={entryPoint.y}
         x2={socketPos.x}
         y2={socketPos.y}
-        stroke="#3a3a52"
-        strokeWidth="2"
+        stroke="#4a4a5e"
+        strokeWidth="2.5"
       />
 
-      {/* Small passive nodes */}
-      {smallNodes.map((pos, i) => (
+      {/* --- Small Passives (4 total) --- */}
+      {[small1, small2, small3, small4].map((pos, i) => (
         <circle
           key={`small-${i}`}
           cx={pos.x}
           cy={pos.y}
           r={smallR}
           fill="url(#small-grad)"
-          stroke="#555"
+          stroke="#666"
           strokeWidth="1.5"
-          opacity="0.5"
+          opacity="0.6"
         />
       ))}
 
-      {/* Position 2 — Undesired (top, red) */}
+      {/* --- Jewel Sockets (2 total, blue) --- */}
+      {[jsocket1, jsocket2].map((pos, i) => (
+        <g key={`jsocket-${i}`}>
+          <circle
+            cx={pos.x}
+            cy={pos.y}
+            r={jewelSocketR}
+            fill="url(#jewelsocket-grad)"
+            stroke="#5588cc"
+            strokeWidth="2"
+            filter="url(#glow-blue)"
+          />
+          {/* Inner diamond shape to distinguish from passives */}
+          <rect
+            x={pos.x - 4}
+            y={pos.y - 4}
+            width={8}
+            height={8}
+            rx={1}
+            fill="none"
+            stroke="rgba(255,255,255,0.4)"
+            strokeWidth="1"
+            transform={`rotate(45, ${pos.x}, ${pos.y})`}
+          />
+        </g>
+      ))}
+
+      {/* --- Notable 2 — Undesired (top, red) --- */}
       <circle
-        cx={pos2.x}
-        cy={pos2.y}
-        r={nodeR}
+        cx={notable2.x}
+        cy={notable2.y}
+        r={notableR}
         fill="url(#undesired-grad)"
         stroke="#c84a4a"
         strokeWidth="2"
         filter="url(#glow-red)"
       />
       <text
-        x={pos2.x}
-        y={pos2.y + 1}
+        x={notable2.x}
+        y={notable2.y + 1}
         textAnchor="middle"
         dominantBaseline="central"
         fill="white"
-        fontSize="14"
+        fontSize="13"
         fontWeight="bold"
         fontFamily="sans-serif"
       >
         2
       </text>
 
-      {/* Position 1 — Desired (bottom-left, green) */}
+      {/* --- Notable 1 — Desired (left, green) --- */}
       <circle
-        cx={pos1.x}
-        cy={pos1.y}
-        r={nodeR}
+        cx={notable1.x}
+        cy={notable1.y}
+        r={notableR}
         fill="url(#desired-grad)"
         stroke="#4ac864"
         strokeWidth="2"
         filter="url(#glow-green)"
       />
       <text
-        x={pos1.x}
-        y={pos1.y + 1}
+        x={notable1.x}
+        y={notable1.y + 1}
         textAnchor="middle"
         dominantBaseline="central"
         fill="white"
-        fontSize="14"
+        fontSize="13"
         fontWeight="bold"
         fontFamily="sans-serif"
       >
         1
       </text>
 
-      {/* Position 3 — Desired (bottom-right, green) */}
+      {/* --- Notable 3 — Desired (right, green) --- */}
       <circle
-        cx={pos3.x}
-        cy={pos3.y}
-        r={nodeR}
+        cx={notable3.x}
+        cy={notable3.y}
+        r={notableR}
         fill="url(#desired-grad)"
         stroke="#4ac864"
         strokeWidth="2"
         filter="url(#glow-green)"
       />
       <text
-        x={pos3.x}
-        y={pos3.y + 1}
+        x={notable3.x}
+        y={notable3.y + 1}
         textAnchor="middle"
         dominantBaseline="central"
         fill="white"
-        fontSize="14"
+        fontSize="13"
         fontWeight="bold"
         fontFamily="sans-serif"
       >
         3
       </text>
 
-      {/* Jewel Socket */}
+      {/* --- Entry Socket (gold diamond at bottom) --- */}
       <rect
-        x={socketPos.x - 12}
-        y={socketPos.y - 12}
-        width={24}
-        height={24}
-        rx={4}
+        x={socketPos.x - 11}
+        y={socketPos.y - 11}
+        width={22}
+        height={22}
+        rx={3}
         fill="url(#socket-grad)"
         stroke="#c8a964"
         strokeWidth="2"
