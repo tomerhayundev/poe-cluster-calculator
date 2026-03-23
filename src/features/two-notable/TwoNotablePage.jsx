@@ -35,70 +35,104 @@ export default function TwoNotablePage() {
   }
 
   const enabledCount = selected.filter((n) => !disabled.includes(n)).length;
+  const validResults = results?.results?.filter((r) => r.success) || [];
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h2 className="page-title">2-Notable Calculator</h2>
-        <p className="page-description">
-          Find possible 'middle' notables on Large Cluster Jewels when you want
-          two desirable notables but don't want to allocate the third.
-        </p>
+      {/* Hero Section — asymmetric 2-column */}
+      <div className="hero-row">
+        <div className="hero-main">
+          <div className="hero-label">Cluster Jewel Analysis</div>
+          <h1 className="hero-title">Find Your<br />Perfect Middle</h1>
+          <p className="hero-desc">
+            Select two desired notables for positions 1 & 3.
+            The calculator finds all valid position 2 notables
+            and generates trade links.
+          </p>
+          <div className="hero-stats">
+            <div className="stat-block">
+              <span className="stat-label">Selected</span>
+              <span className="stat-value">{selected.length}</span>
+            </div>
+            <div className="stat-block">
+              <span className="stat-label">Enabled</span>
+              <span className="stat-value">{enabledCount}</span>
+            </div>
+            {results && (
+              <div className="stat-block">
+                <span className="stat-label">Results</span>
+                <span className="stat-value stat-value--accent">{validResults.length}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="hero-side">
+          <div className="diagram-card">
+            <ClusterDiagram size={160} />
+            <div className="diagram-legend">
+              <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
+              <span className="legend-item legend-item--middle">2 = Undesired</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="calculator-layout">
-        {/* Input Panel */}
-        <div className="panel">
-          <div className="panel-header">
-            <h3>Select Notables</h3>
-          </div>
-          <div className="panel-body">
-            <div className="diagram-section">
-              <ClusterDiagram size={140} />
-              <div className="diagram-legend">
-                <span className="legend-item legend-item--desired">1 & 3 = Desired notables</span>
-                <span className="legend-item legend-item--middle">2 = Undesired middle</span>
-                <span className="legend-item" style={{color: '#c8a964', fontSize: '11px'}}>◆ = Jewel socket</span>
-              </div>
-            </div>
+      {/* Input Section */}
+      <div className="section">
+        <div className="section-header">
+          <span className="section-icon">◆</span>
+          <h3 className="section-title">Notable Selection</h3>
+        </div>
 
+        <div className="input-grid">
+          <div className="input-main">
             <NotableSearch
               onSelect={addNotable}
               currentlySelected={selected}
               placeholder="Search and add a notable…"
             />
-
             <SelectedNotablesList
               selected={selected}
               disabled={disabled}
               onRemove={removeNotable}
               onToggle={toggleNotable}
             />
+          </div>
 
+          <div className="input-action">
             <button
               className="btn btn--primary btn--full"
               onClick={handleCalculate}
               disabled={enabledCount < 2}
             >
               {enabledCount < 2
-                ? `Select ${2 - enabledCount} more notable${2 - enabledCount > 1 ? 's' : ''}`
-                : `Calculate (${enabledCount} selected)`}
+                ? `Select ${2 - enabledCount} more`
+                : 'Calculate'}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Results Panel */}
-        {results && (
-          <div className="panel panel--results">
-            <div className="panel-header">
-              <h3>Results</h3>
-            </div>
-            <div className="panel-body">
-              <TwoNotableResults data={results} />
+      {/* Results Section */}
+      {results && (
+        <div className="section section--results">
+          <div className="section-header">
+            <span className="section-icon section-icon--active">◆</span>
+            <h3 className="section-title">Analysis Results</h3>
+            <div className="section-tabs">
+              <span className="tab-pill tab-pill--active">All</span>
+              <span className="tab-pill">{validResults.length} Valid</span>
+              {results.results.filter((r) => !r.success).length > 0 && (
+                <span className="tab-pill">
+                  {results.results.filter((r) => !r.success).length} Failed
+                </span>
+              )}
             </div>
           </div>
-        )}
-      </div>
+          <TwoNotableResults data={results} />
+        </div>
+      )}
     </div>
   );
 }
