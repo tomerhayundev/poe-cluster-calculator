@@ -56,7 +56,6 @@ export default function Layout({ children }) {
             Logic by{' '}
             <a href="https://github.com/TheodoreJBieber/PoEClusterJewelCalculator" target="_blank" rel="noreferrer">TheodoreJBieber</a>
           </p>
-          <p className="sidebar-footer__disclaimer">No affiliation with GGG</p>
           <p className="sidebar-footer__version">v{APP_VERSION}</p>
         </div>
       </aside>
@@ -84,6 +83,7 @@ export default function Layout({ children }) {
         {/* Footer */}
         <footer className="app-footer">
           <span className="footer-league">{settings.league} League</span>
+          <span className="footer-disclaimer">No affiliation with GGG</span>
         </footer>
       </div>
     </div>
