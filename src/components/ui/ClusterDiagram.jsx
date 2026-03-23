@@ -1,28 +1,24 @@
 /**
  * Original SVG cluster jewel diagram — accurate 8-passive Large Cluster Jewel layout.
  *
- * Correct clockwise layout from entry socket at bottom:
- *   Socket(entry) → Small → Notable1(green) → Small → JewelSocket → Notable2(red) → JewelSocket → Small → Notable3(green) → Small → back to Socket
+ * Correct layout from the reference image (clockwise from bottom):
+ *   Small(bottom) → Notable1(left) → JewelSocket(upper-left) → Small(top-left) → Notable2(top) → Small(top-right) → JewelSocket(upper-right) → Notable3(right) → back to Small(bottom)
  *
- * That's 10 ring positions evenly spaced at 36° apart.
- * The entry socket sits below the ring, connected by a short line.
+ * That's 8 nodes on the ring. Entry socket sits below, connected to the bottom small passive.
  */
 export default function ClusterDiagram({ size = 200 }) {
   const cx = 100;
-  const cy = 100;
-  const r = 70;
+  const cy = 95;
+  const r = 68;
   const notableR = 15;
   const smallR = 7;
   const jewelSocketR = 10;
 
-  // 10 positions on the ring, evenly spaced 36° apart.
-  // Position 0 = bottom center (6 o'clock, where entry connects).
-  // Going CLOCKWISE: 0→1→2→...→9
-  // In SVG, Y grows downward. To go clockwise from bottom:
-  //   bottom = 90° in SVG coords (cos90=0, sin90=1 → cy+r = bottom)
-  //   clockwise in SVG = subtract angle
+  // 8 positions on the ring, evenly spaced 45° apart.
+  // Position 0 = bottom center (6 o'clock).
+  // Clockwise in SVG (Y-down): start at 90° and subtract.
   function ringPos(index) {
-    const angleDeg = 90 - index * 36; // clockwise from bottom
+    const angleDeg = 90 - index * 45;
     const angleRad = (angleDeg * Math.PI) / 180;
     return {
       x: cx + r * Math.cos(angleRad),
@@ -30,31 +26,27 @@ export default function ClusterDiagram({ size = 200 }) {
     };
   }
 
-  // Ring positions (clockwise from bottom):
-  // 0: entry point (bottom, where socket connects — no node drawn here, just the arc)
-  // 1: small passive
-  // 2: Notable 1 (desired, green) — left side
-  // 3: small passive
-  // 4: Jewel socket — upper-left
-  // 5: Notable 2 (undesired, red) — top
-  // 6: Jewel socket — upper-right
-  // 7: small passive
-  // 8: Notable 3 (desired, green) — right side
-  // 9: small passive
+  // 8 ring positions (clockwise from bottom):
+  // 0: Small passive (bottom center) — entry connects here
+  // 1: Notable 1 (desired, green) — lower-left
+  // 2: Jewel socket (blue) — upper-left
+  // 3: Small passive — top-left of Notable 2
+  // 4: Notable 2 (undesired, red) — top center
+  // 5: Small passive — top-right of Notable 2
+  // 6: Jewel socket (blue) — upper-right
+  // 7: Notable 3 (desired, green) — lower-right
 
-  const small1 = ringPos(1);
-  const notable1 = ringPos(2);
-  const small2 = ringPos(3);
-  const jsocket1 = ringPos(4);
-  const notable2 = ringPos(5);
+  const smallBottom = ringPos(0);
+  const notable1 = ringPos(1);
+  const jsocket1 = ringPos(2);
+  const smallLeft = ringPos(3);
+  const notable2 = ringPos(4);
+  const smallRight = ringPos(5);
   const jsocket2 = ringPos(6);
-  const small3 = ringPos(7);
-  const notable3 = ringPos(8);
-  const small4 = ringPos(9);
+  const notable3 = ringPos(7);
 
-  // Entry socket below the ring
-  const entryPoint = ringPos(0);
-  const socketPos = { x: cx, y: cy + r + 26 };
+  // Entry socket below the ring, connected to bottom small
+  const socketPos = { x: cx, y: cy + r + 30 };
 
   return (
     <svg
@@ -126,18 +118,18 @@ export default function ClusterDiagram({ size = 200 }) {
         opacity="0.7"
       />
 
-      {/* Connection line from ring bottom to entry socket */}
+      {/* Connection line from bottom small passive to entry socket */}
       <line
-        x1={entryPoint.x}
-        y1={entryPoint.y}
+        x1={smallBottom.x}
+        y1={smallBottom.y}
         x2={socketPos.x}
         y2={socketPos.y}
         stroke="#4a4a5e"
         strokeWidth="2.5"
       />
 
-      {/* --- Small Passives (4 total) --- */}
-      {[small1, small2, small3, small4].map((pos, i) => (
+      {/* --- Small Passives (3 total: bottom + flanking Notable 2) --- */}
+      {[smallBottom, smallLeft, smallRight].map((pos, i) => (
         <circle
           key={`small-${i}`}
           cx={pos.x}
@@ -146,7 +138,7 @@ export default function ClusterDiagram({ size = 200 }) {
           fill="url(#small-grad)"
           stroke="#666"
           strokeWidth="1.5"
-          opacity="0.6"
+          opacity="0.7"
         />
       ))}
 
@@ -162,7 +154,6 @@ export default function ClusterDiagram({ size = 200 }) {
             strokeWidth="2"
             filter="url(#glow-blue)"
           />
-          {/* Inner diamond shape to distinguish from passives */}
           <rect
             x={pos.x - 4}
             y={pos.y - 4}
@@ -200,7 +191,7 @@ export default function ClusterDiagram({ size = 200 }) {
         2
       </text>
 
-      {/* --- Notable 1 — Desired (left, green) --- */}
+      {/* --- Notable 1 — Desired (lower-left, green) --- */}
       <circle
         cx={notable1.x}
         cy={notable1.y}
@@ -223,7 +214,7 @@ export default function ClusterDiagram({ size = 200 }) {
         1
       </text>
 
-      {/* --- Notable 3 — Desired (right, green) --- */}
+      {/* --- Notable 3 — Desired (lower-right, green) --- */}
       <circle
         cx={notable3.x}
         cy={notable3.y}
