@@ -2148,11 +2148,18 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-footer { display: none; }
   .main-area { margin-left: 0; }
   .main-content { padding: 16px; }
-  .topbar { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
+  .topbar { padding: 6px 10px; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+  #topbar-slot { order: -1; width: 100%; }
+  .topbar-right { width: 100%; justify-content: space-between; }
   .topbar-title { display: none; }
-  .topbar-right { flex-wrap: wrap; gap: 6px; }
-  .trade-setting__select { font-size: 10px; padding: 3px 6px; max-width: 110px; }
-  .trade-setting__label { font-size: 8px; }
+  .topbar-right { gap: 4px; }
+  .topbar-btn { display: none; }
+  .trade-setting__select { font-size: 10px; padding: 2px 4px; width: 100%; }
+  .trade-settings { width: 100%; }
+  .trade-settings__controls { gap: 4px; flex: 1; }
+  .trade-setting { flex: 1; }
+  .smart-toggle__btn { font-size: 9px; padding: 3px 8px; }
+  .help-tip__icon { width: 14px; height: 14px; font-size: 9px; }
   .section-header { padding: 10px 12px; }
   .section-header__right { flex-wrap: wrap; gap: 6px; }
   .app-footer { padding: 8px 16px; }
