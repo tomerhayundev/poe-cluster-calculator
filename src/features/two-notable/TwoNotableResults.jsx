@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   buildTradeUrl3n2d,
+  buildMasterTradeUrl,
   getEnchantKey,
   enchantMap,
   includesEnchant,
@@ -78,12 +79,20 @@ function ResultDetail({ result }) {
   const {
     notableName1,
     notableName3,
+    notablesBetween,
     notable1,
     notable3,
-    notablesBetween,
     validEnchants,
     betweenNames,
   } = result;
+
+  const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // Build MASTER trade link — all valid middles, any enchant
+  const masterUrl = buildMasterTradeUrl(
+    [notableName1, notableName3],
+    betweenNames
+  );
 
   return (
     <div className="result-detail">
@@ -97,6 +106,23 @@ function ResultDetail({ result }) {
           <span className="notable-badge notable-badge--desired">{notableName3}</span>
           <span className="notable-ilvl">ilvl {notable3.Mod.Level}</span>
         </div>
+      </div>
+
+      {/* MASTER Trade Link — primary action */}
+      <div className="result-section">
+        <a
+          href={masterUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="trade-link trade-link--master"
+        >
+          <span className="trade-link__icon">⚡</span>
+          <span className="trade-link__content">
+            <strong>Search Trade</strong>
+            <small>Find cheapest jewel across all {betweenNames.length} valid middles</small>
+          </span>
+          <span className="trade-link__arrow">↗</span>
+        </a>
       </div>
 
       {/* Middle notables */}
@@ -114,9 +140,15 @@ function ResultDetail({ result }) {
         </div>
       </div>
 
-      {/* Enchant-specific trade links */}
-      <div className="result-section">
-        <h4 className="result-section__title">Trade Links</h4>
+      {/* Breakdown trade links — collapsible */}
+      <details
+        className="breakdown-section"
+        open={showBreakdown}
+        onToggle={(e) => setShowBreakdown(e.target.open)}
+      >
+        <summary className="breakdown-toggle">
+          Breakdown by enchant ({validEnchants.length} types)
+        </summary>
         <div className="trade-links">
           {validEnchants.map((ench) => {
             const matchingMiddles = notablesBetween
@@ -147,24 +179,8 @@ function ResultDetail({ result }) {
               </a>
             );
           })}
-
-          {/* Any enchant link */}
-          {validEnchants.length > 1 && (
-            <a
-              href={buildTradeUrl3n2d(
-                [notableName1, notableName3],
-                betweenNames
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="trade-link trade-link--any"
-            >
-              <span className="trade-link__label">Any Enchant</span>
-              <span className="trade-link__arrow">↗</span>
-            </a>
-          )}
         </div>
-      </div>
+      </details>
     </div>
   );
 }

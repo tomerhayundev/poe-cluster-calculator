@@ -463,6 +463,53 @@ export function buildTradeUrl3n2d(desired, others, enchant = null) {
   return TRADE_BASE + encodeURIComponent(JSON.stringify(base_request));
 }
 
+/**
+ * Build a MASTER trade link that searches for the cheapest jewel matching
+ * ANY valid combination. For two-notable mode: desired1 + desired2 + any valid middle.
+ * For single-notable side mode: desired + any valid companion on the other side.
+ */
+export function buildMasterTradeUrl(desiredNames, allMiddleNames = []) {
+  const base_request = {
+    sort: { price: 'asc' },
+    query: {
+      status: { option: 'onlineleague' },
+      stats: [],
+    },
+  };
+
+  const and_body = { type: 'and', filters: [] };
+
+  // Must be 8-passive
+  and_body.filters.push({
+    value: { max: 8, min: 8 },
+    id: megaStruct.TradeStats.Enchant['Adds # Passive Skills']['id'],
+  });
+
+  // Must have all desired notables
+  for (const name of desiredNames) {
+    const id = getNotableTradeId(name);
+    if (id) and_body.filters.push({ id });
+  }
+
+  base_request.query.stats.push(and_body);
+
+  // Must have at least 1 of the valid middles/companions
+  if (allMiddleNames.length > 0) {
+    // Deduplicate
+    const unique = [...new Set(allMiddleNames)];
+    const count_body = { type: 'count', value: { min: 1 }, filters: [] };
+    for (const name of unique) {
+      const id = getNotableTradeId(name);
+      if (id) count_body.filters.push({ id });
+    }
+    if (count_body.filters.length > 0) {
+      base_request.query.stats.push(count_body);
+    }
+  }
+
+  return TRADE_BASE + encodeURIComponent(JSON.stringify(base_request));
+}
+
 export function buildTemplateTradeUrl(min, max, ilvlMin = null) {
   const base_request = {
     sort: { price: 'asc' },

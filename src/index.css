@@ -368,6 +368,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 28px 32px;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-step);
+  overflow: visible;
 }
 
 .hero-label {
@@ -522,7 +523,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .input-action {
-  max-width: 200px;
+  width: 100%;
 }
 
 /* --- Calculator Layout (legacy compat) --- */
@@ -1026,9 +1027,78 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface-container-lowest);
 }
 
+/* Master trade link — primary CTA */
+.trade-link--master {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--accent-gold-dim) 0%, var(--surface-container) 100%);
+  border: 1px solid var(--primary);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  color: var(--on-surface);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.trade-link--master:hover {
+  background: linear-gradient(135deg, rgba(233, 193, 118, 0.15) 0%, var(--surface-container-high) 100%);
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(233, 193, 118, 0.1);
+}
+.trade-link__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.trade-link__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+.trade-link__content strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.trade-link__content small {
+  font-size: 11px;
+  color: var(--outline);
+}
+
+/* Breakdown section — collapsible */
+.breakdown-section {
+  margin-top: 12px;
+}
+.breakdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface-container);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--outline);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition);
+}
+.breakdown-toggle:hover {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+
 .trade-link__arrow {
   color: var(--secondary);
   font-size: 14px;
+}
+.trade-link--master .trade-link__arrow {
+  color: var(--primary);
+  font-size: 16px;
 }
 
 /* --- Error States --- */
