@@ -270,7 +270,30 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 6px var(--accent-teal);
 }
 
-.sidebar-footer .disclaimer { margin: 0; }
+.sidebar-footer p {
+  margin: 0 0 4px;
+}
+.sidebar-footer__credit {
+  font-size: 10px;
+  color: var(--outline-variant);
+}
+.sidebar-footer__credit a {
+  color: var(--outline);
+}
+.sidebar-footer__disclaimer {
+  font-size: 9px;
+  color: var(--outline-variant);
+  opacity: 0.7;
+  margin-top: 6px !important;
+}
+.sidebar-footer__version {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--outline-variant);
+  letter-spacing: 0.08em;
+  margin-top: 8px !important;
+}
 
 /* --- Main Area (topbar + content + footer) --- */
 .main-area {

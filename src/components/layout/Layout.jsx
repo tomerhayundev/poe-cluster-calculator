@@ -47,7 +47,18 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
-        <div className="sidebar-footer" />
+        <div className="sidebar-footer">
+          <p className="sidebar-footer__credit">
+            Created by{' '}
+            <a href="https://poe.tichoh.com" target="_blank" rel="noreferrer">Tichoh</a>
+          </p>
+          <p className="sidebar-footer__credit">
+            Logic by{' '}
+            <a href="https://github.com/TheodoreJBieber/PoEClusterJewelCalculator" target="_blank" rel="noreferrer">TheodoreJBieber</a>
+          </p>
+          <p className="sidebar-footer__disclaimer">No affiliation with GGG</p>
+          <p className="sidebar-footer__version">v{APP_VERSION}</p>
+        </div>
       </aside>
 
       {/* Main Area */}
@@ -72,26 +83,7 @@ export default function Layout({ children }) {
 
         {/* Footer */}
         <footer className="app-footer">
-          <div className="footer-left">
-            <span className="footer-league">{settings.league} League</span>
-            <span className="footer-sep">·</span>
-            <span className="footer-credit">
-              Created by{' '}
-              <a href="https://poe.tichoh.com" target="_blank" rel="noreferrer">
-                Tichoh
-              </a>
-            </span>
-            <span className="footer-sep">·</span>
-            <span className="footer-credit">
-              Logic by{' '}
-              <a href="https://github.com/TheodoreJBieber/PoEClusterJewelCalculator" target="_blank" rel="noreferrer">
-                TheodoreJBieber
-              </a>
-            </span>
-            <span className="footer-sep">·</span>
-            <span className="footer-disclaimer">No affiliation with GGG</span>
-          </div>
-          <span className="footer-version">v{APP_VERSION}</span>
+          <span className="footer-league">{settings.league} League</span>
         </footer>
       </div>
     </div>
