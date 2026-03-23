@@ -527,7 +527,7 @@ h1, h2, h3, h4, h5, h6 {
 .mode-setup__controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .mode-setup__diagram {
   display: flex;
@@ -1085,70 +1085,62 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .position-selector {
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .position-label {
-  display: block;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--outline);
-  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .position-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  gap: 4px;
 }
 
 .position-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--surface-container);
-  border: 1px solid transparent;
+  gap: 6px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  text-align: left;
   transition: all var(--transition);
   color: var(--on-surface);
-  font-family: var(--font-body);
-}
-.position-btn:hover {
-  background: var(--surface-container-high);
-}
-.position-btn--active {
-  border-left: 3px solid var(--primary);
-  background: var(--accent-gold-dim);
 }
 
-.position-btn__icon {
-  font-size: 22px;
+.position-btn:hover {
+  border-color: var(--on-surface-variant);
+}
+.position-btn--active {
+  border-color: var(--primary);
   color: var(--primary);
 }
 
-.position-btn__text strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 14px;
-  margin-bottom: 2px;
+.position-btn__icon {
+  font-size: 12px;
 }
-.position-btn__text small {
+
+.position-btn__text strong {
+  font-family: var(--font-display);
   font-size: 11px;
-  color: var(--outline-variant);
+  font-weight: 600;
 }
 
 /* --- Mode Toggle --- */
 .mode-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .mode-btn {
@@ -1157,10 +1149,10 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 4px;
-  padding: 10px 8px;
-  background: var(--surface-container);
-  border: 1px solid transparent;
+  gap: 2px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition);
@@ -1168,11 +1160,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-body);
 }
 .mode-btn:hover {
-  background: var(--surface-container-high);
+  border-color: var(--on-surface-variant);
 }
 .mode-btn--active {
   border-color: var(--primary);
-  background: transparent;
+  color: var(--primary);
 }
 .mode-btn__label {
   font-family: var(--font-display);
@@ -2165,7 +2157,7 @@ h1, h2, h3, h4, h5, h6 {
   .section-header { padding: 10px 12px; }
   .section-header__right { flex-wrap: wrap; gap: 6px; }
   .app-footer { padding: 8px 16px; }
-  .position-options { grid-template-columns: 1fr; }
+  .position-selector { flex-wrap: wrap; }
   .app-shell { flex-direction: column; }
   .hero-row { grid-template-columns: 1fr; }
   .hero-title { font-size: 22px; }
