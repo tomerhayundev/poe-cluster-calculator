@@ -1087,7 +1087,7 @@ h1, h2, h3, h4, h5, h6 {
 .position-selector {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .position-label {
@@ -1233,7 +1233,7 @@ h1, h2, h3, h4, h5, h6 {
 .passive-count-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 .passive-count-label {
   font-family: var(--font-display);

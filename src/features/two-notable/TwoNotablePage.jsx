@@ -262,8 +262,8 @@ export default function TwoNotablePage() {
               </div>
 
               <div className="passive-count-row">
-                <label className="passive-count-label">Passives:</label>
                 <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." />
+                <label className="passive-count-label">Passives</label>
                 <div className="passive-count-options">
                   {PASSIVE_COUNTS.map((n) => (
                     <button
@@ -280,7 +280,8 @@ export default function TwoNotablePage() {
               {/* Position selector — Single Notable only */}
               {isSingleMode && (
                 <div className="position-selector">
-                  <label className="position-label">Position: <HelpTip text="Side (1 or 3) means the notable is on the outer ring. Middle (2) means it sits between two side notables — or alone as auto-middle." /></label>
+                  <HelpTip text="Side (1 or 3) means the notable is on the outer ring. Middle (2) means it sits between two side notables — or alone as auto-middle." />
+                  <label className="position-label">Position</label>
                   <div className="position-options">
                     <button
                       className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
