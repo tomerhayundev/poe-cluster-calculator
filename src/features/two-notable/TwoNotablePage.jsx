@@ -258,7 +258,8 @@ export default function TwoNotablePage() {
 
           {/* Passive Count Selector */}
           <div className="passive-count-row">
-            <label className="passive-count-label">Passives: <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." /></label>
+            <label className="passive-count-label">Passives:</label>
+            <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." />
             <div className="passive-count-options">
               {PASSIVE_COUNTS.map((n) => (
                 <button
