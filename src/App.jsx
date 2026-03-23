@@ -3,7 +3,6 @@ import { Routes, Route, NavLink } from 'react-router-dom';
 import { initData } from './data/calculator';
 import Layout from './components/layout/Layout';
 import TwoNotablePage from './features/two-notable/TwoNotablePage';
-import SingleNotablePage from './features/single-notable/SingleNotablePage';
 import TradeTemplatesPage from './features/trade-templates/TradeTemplatesPage';
 
 export default function App() {
@@ -27,7 +26,6 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<TwoNotablePage />} />
-        <Route path="/single" element={<SingleNotablePage />} />
         <Route path="/trade" element={<TradeTemplatesPage />} />
       </Routes>
     </Layout>

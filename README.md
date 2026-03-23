@@ -1,16 +1,40 @@
-# React + Vite
+# PoE Cluster Jewel Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern Path of Exile Cluster Jewel Calculator that helps you find the cheapest 8-passive Large Cluster Jewels with the notables you want.
 
-Currently, two official plugins are available:
+**Live:** [cluster.tichoh.com](https://cluster.tichoh.com) | [poe-cluster-calculator.pages.dev](https://poe-cluster-calculator.pages.dev)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Smart Notable Detection** — Select 1 or 2 notables and the calculator adapts automatically
+- **Single Notable Mode** — Pick one notable and choose if you want it on the side (pos 1/3) or middle (pos 2). Finds all valid companion pairings based on sort-order logic
+- **Two Notable Mode** — Select two desired notables for positions 1 & 3, find all valid position 2 (middle) notables
+- **Master Trade Link** — One-click search that finds the cheapest jewel across ALL valid combinations
+- **Breakdown View** — Expandable detailed view per enchant type or companion notable
+- **Trade Templates** — Quick links for base jewel shopping
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## How It Works
 
-## Expanding the ESLint configuration
+Cluster jewels with 3 notables place them at positions 1, 2, and 3 based on an internal sort order (`Stat._rid`). Position 1 and 3 are on the sides (desired), position 2 is in the middle (undesired). The calculator uses this sort order to determine which notable combinations are valid and generates PoE trade search URLs.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tech Stack
+
+- React + Vite
+- Deployed on Cloudflare Pages via GitHub Actions
+- Game data sourced from [TheodoreJBieber/PoEClusterJewelCalculator](https://github.com/TheodoreJBieber/PoEClusterJewelCalculator)
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Deployment
+
+Pushes to `master` automatically deploy to Cloudflare Pages via GitHub Actions.
+
+## Credits
+
+- Original calculation logic by [TheodoreJBieber](https://github.com/TheodoreJBieber/PoEClusterJewelCalculator)
+- No affiliation with Grinding Gear Games

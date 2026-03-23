@@ -2,15 +2,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Calculator', icon: '◆' },
-  { to: '/single', label: 'Explorer', icon: '◇' },
   { to: '/trade', label: 'Trade', icon: '⬡' },
 ];
 
 function getPageTitle(pathname) {
   switch (pathname) {
-    case '/single': return 'Single Notable Explorer';
     case '/trade': return 'Trade Templates';
-    default: return '2-Notable Calculator';
+    default: return 'Cluster Jewel Calculator';
   }
 }
 
