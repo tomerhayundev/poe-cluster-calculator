@@ -13,9 +13,9 @@ import HelpTip from '../../components/ui/HelpTip';
 import { readUrlState, buildShareUrl, copyToClipboard } from '../../hooks/useUrlState';
 
 const MODES = [
-  { value: 'two-sides', label: 'Two Sides', desc: 'Select notables for positions 1 & 3' },
-  { value: 'split', label: 'Side + Middle', desc: 'Pick one side + one middle notable', badge: 'Split Personality' },
-  { value: 'single', label: 'Single Notable', desc: 'Explore options for one notable' },
+  { value: 'two-sides', label: 'Two Sides' },
+  { value: 'split', label: 'Side + Middle' },
+  { value: 'single', label: 'Single Notable' },
 ];
 
 const PASSIVE_COUNTS = [8, 9, 10, 11, 12];
@@ -245,7 +245,7 @@ export default function TwoNotablePage() {
           <div className="section-header">
             <span className="section-icon">◆</span>
             <h3 className="section-title">Mode</h3>
-            <HelpTip text="Choose how to select your notables. Two Sides picks positions 1 & 3. Side + Middle picks one of each. Single Notable explores one." />
+            <HelpTip text="Two Sides: pick positions 1 & 3. Side + Middle (Split Personality): pick one of each, tool finds the third. Single Notable: explore options for one." />
           </div>
           <div className="mode-setup">
             <div className="mode-setup__controls">
@@ -257,9 +257,6 @@ export default function TwoNotablePage() {
                     onClick={() => handleModeChange(m.value)}
                   >
                     <span className="mode-btn__label">{m.label}</span>
-                    {m.badge && (
-                      <span className="mode-btn__badge">{m.badge}</span>
-                    )}
                   </button>
                 ))}
               </div>
@@ -289,19 +286,13 @@ export default function TwoNotablePage() {
                       className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
                       onClick={() => { setSinglePosition('side'); setResults(null); }}
                     >
-                      <span className="position-btn__icon">◆</span>
-                      <span className="position-btn__text">
-                        <strong>Side (1 or 3)</strong>
-                      </span>
+                      Side (1 or 3)
                     </button>
                     <button
                       className={`position-btn ${singlePosition === 'middle' ? 'position-btn--active' : ''}`}
                       onClick={() => { setSinglePosition('middle'); setResults(null); }}
                     >
-                      <span className="position-btn__icon">◇</span>
-                      <span className="position-btn__text">
-                        <strong>Middle (2)</strong>
-                      </span>
+                      Middle (2)
                     </button>
                   </div>
                 </div>
