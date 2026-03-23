@@ -1086,8 +1086,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .position-selector {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.position-selector__header {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .position-label {
@@ -1232,8 +1237,13 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Passive Count Selector --- */
 .passive-count-row {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.passive-count-row__header {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .passive-count-label {
   font-family: var(--font-display);
@@ -2148,7 +2158,7 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-footer { display: none; }
   .main-area { margin-left: 0; }
   .main-content { padding: 16px; }
-  .topbar { padding: 6px 10px; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+  .topbar { padding: 8px 10px; flex-wrap: wrap; gap: 8px; align-items: center; }
   #topbar-slot { order: -1; width: 100%; }
   .topbar-right { width: 100%; justify-content: space-between; }
   .topbar-title { display: none; }
