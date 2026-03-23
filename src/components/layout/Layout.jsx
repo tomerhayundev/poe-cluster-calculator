@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import TradeSettings from '../ui/TradeSettings';
+import { useTradeSettings } from '../../data/TradeSettingsContext';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Calculator', icon: '◆' },
@@ -16,6 +17,7 @@ function getPageTitle(pathname) {
 export default function Layout({ children }) {
   const location = useLocation();
   const pageTitle = getPageTitle(location.pathname);
+  const { settings } = useTradeSettings();
 
   return (
     <div className="app-shell">
@@ -81,7 +83,7 @@ export default function Layout({ children }) {
         {/* Footer */}
         <footer className="app-footer">
           <span className="footer-status">
-            <span className="status-dot"></span> Data: Settlers League
+            <span className="status-dot"></span> {settings.league} League
           </span>
           <span className="footer-credit">
             Logic:{' '}

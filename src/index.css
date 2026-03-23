@@ -402,8 +402,8 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Main Content --- */
 .main-content {
   flex: 1;
-  padding: 28px 32px;
-  max-width: 1000px;
+  padding: 28px 48px;
+  width: 100%;
 }
 
 /* --- App Footer --- */
@@ -1217,54 +1217,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 .failures-toggle:hover { color: var(--outline); }
 
-/* --- Trade Templates Grid --- */
-.trade-templates-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 8px;
-}
-
-/* First card wider — intentional asymmetry */
-.trade-templates-grid > :first-child {
-  grid-column: span 1;
-}
-
-.template-card {
+/* --- Trade Templates List --- */
+.template-list {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  background: var(--surface-container-low);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  color: var(--on-surface);
-  transition: all var(--transition);
-  border-left: 2px solid transparent;
-  box-shadow: var(--shadow-step);
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
 }
-.template-card:hover {
-  border-left-color: var(--primary);
-  background: var(--surface-container);
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-
-.template-card__icon { font-size: 28px; }
-.template-card__content { flex: 1; }
-.template-card__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-}
-.template-card__desc {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--outline-variant);
-}
-.template-card__arrow {
+.trade-link__template-icon {
+  font-size: 18px;
   color: var(--primary);
-  font-size: 16px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
 }
 
 /* --- Pairing Card (Single Notable) --- */
