@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { buildMasterTradeUrl } from '../../data/calculator';
+import { useTradeSettings } from '../../data/TradeSettingsContext';
 
 export default function SingleNotableResults({ data }) {
   if (data.error) {
@@ -16,6 +17,7 @@ export default function SingleNotableResults({ data }) {
 function SideResults({ data }) {
   const [search, setSearch] = useState('');
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const { settings } = useTradeSettings();
 
   const filtered = data.results.filter((r) =>
     r.partnerName.toLowerCase().includes(search.toLowerCase())
@@ -25,7 +27,7 @@ function SideResults({ data }) {
 
   // Collect ALL unique partner names for the master trade link
   const allPartnerNames = data.results.map((r) => r.partnerName);
-  const masterUrl = buildMasterTradeUrl([data.notableName], allPartnerNames);
+  const masterUrl = buildMasterTradeUrl([data.notableName], allPartnerNames, settings);
 
   return (
     <div className="single-results">
@@ -116,6 +118,7 @@ function SideResults({ data }) {
 
 function MiddleResults({ data }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const { settings } = useTradeSettings();
 
   // Collect all unique side names for master link
   const allSideNames = new Set();
@@ -123,7 +126,7 @@ function MiddleResults({ data }) {
     allSideNames.add(r.sideName1);
     allSideNames.add(r.sideName3);
   }
-  const masterUrl = buildMasterTradeUrl([data.notableName], [...allSideNames]);
+  const masterUrl = buildMasterTradeUrl([data.notableName], [...allSideNames], settings);
 
   const displayed = showBreakdown ? data.results : data.results.slice(0, 30);
 

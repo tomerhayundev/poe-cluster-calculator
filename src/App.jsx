@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import { initData } from './data/calculator';
+import { TradeSettingsProvider } from './data/TradeSettingsContext';
 import Layout from './components/layout/Layout';
 import TwoNotablePage from './features/two-notable/TwoNotablePage';
 import TradeTemplatesPage from './features/trade-templates/TradeTemplatesPage';
@@ -23,11 +24,13 @@ export default function App() {
   }
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<TwoNotablePage />} />
-        <Route path="/trade" element={<TradeTemplatesPage />} />
-      </Routes>
-    </Layout>
+    <TradeSettingsProvider>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<TwoNotablePage />} />
+          <Route path="/trade" element={<TradeTemplatesPage />} />
+        </Routes>
+      </Layout>
+    </TradeSettingsProvider>
   );
 }

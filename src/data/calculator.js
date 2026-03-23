@@ -407,21 +407,34 @@ function calculateSingleNotableMiddle(notableName, notable) {
 }
 
 // --- Trade URL Generation ---
-const TRADE_BASE = 'https://www.pathofexile.com/trade/search/Settlers?q=';
 
-export function getTradeBase() {
-  return TRADE_BASE;
+function getTradeBaseUrl(settings = {}) {
+  const league = settings.league || 'Mirage';
+  const platform = settings.platform || 'pc';
+
+  // Platform-specific trade URLs
+  if (platform === 'xbox') {
+    return `https://www.pathofexile.com/trade/search/xbox/${league}?q=`;
+  }
+  if (platform === 'sony') {
+    return `https://www.pathofexile.com/trade/search/sony/${league}?q=`;
+  }
+  return `https://www.pathofexile.com/trade/search/${league}?q=`;
+}
+
+function getStatusOption(settings = {}) {
+  return settings.status || 'buyout';
 }
 
 export function getNotableTradeId(notable) {
   return megaStruct.TradeStats.Explicit[notable];
 }
 
-export function buildTradeUrl3n2d(desired, others, enchant = null) {
+export function buildTradeUrl3n2d(desired, others, enchant = null, settings = {}) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'buyout' },
+      status: { option: getStatusOption(settings) },
       stats: [],
     },
   };
@@ -460,7 +473,7 @@ export function buildTradeUrl3n2d(desired, others, enchant = null) {
     base_request.query.stats.push(count_body);
   }
 
-  return TRADE_BASE + encodeURIComponent(JSON.stringify(base_request));
+  return getTradeBaseUrl(settings) + encodeURIComponent(JSON.stringify(base_request));
 }
 
 /**
@@ -468,11 +481,11 @@ export function buildTradeUrl3n2d(desired, others, enchant = null) {
  * ANY valid combination. For two-notable mode: desired1 + desired2 + any valid middle.
  * For single-notable side mode: desired + any valid companion on the other side.
  */
-export function buildMasterTradeUrl(desiredNames, allMiddleNames = []) {
+export function buildMasterTradeUrl(desiredNames, allMiddleNames = [], settings = {}) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'buyout' },
+      status: { option: getStatusOption(settings) },
       stats: [],
     },
   };
@@ -507,14 +520,14 @@ export function buildMasterTradeUrl(desiredNames, allMiddleNames = []) {
     }
   }
 
-  return TRADE_BASE + encodeURIComponent(JSON.stringify(base_request));
+  return getTradeBaseUrl(settings) + encodeURIComponent(JSON.stringify(base_request));
 }
 
-export function buildTemplateTradeUrl(min, max, ilvlMin = null) {
+export function buildTemplateTradeUrl(min, max, ilvlMin = null, settings = {}) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'buyout' },
+      status: { option: getStatusOption(settings) },
       stats: [],
     },
   };
@@ -539,7 +552,7 @@ export function buildTemplateTradeUrl(min, max, ilvlMin = null) {
     };
   }
 
-  return TRADE_BASE + encodeURIComponent(JSON.stringify(base_request));
+  return getTradeBaseUrl(settings) + encodeURIComponent(JSON.stringify(base_request));
 }
 
 // --- Get all notable names ---

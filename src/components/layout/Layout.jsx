@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import TradeSettings from '../ui/TradeSettings';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Calculator', icon: '◆' },
@@ -60,7 +61,8 @@ export default function Layout({ children }) {
         {/* Top Bar */}
         <header className="topbar">
           <h2 className="topbar-title">{pageTitle}</h2>
-          <div className="topbar-actions">
+          <div className="topbar-right">
+            <TradeSettings />
             <a
               href="https://github.com/tomerhayundev/poe-cluster-calculator"
               target="_blank"

@@ -6,6 +6,7 @@ import {
   enchantMap,
   includesEnchant,
 } from '../../data/calculator';
+import { useTradeSettings } from '../../data/TradeSettingsContext';
 
 export default function TwoNotableResults({ data }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -87,11 +88,13 @@ function ResultDetail({ result }) {
   } = result;
 
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const { settings } = useTradeSettings();
 
   // Build MASTER trade link — all valid middles, any enchant
   const masterUrl = buildMasterTradeUrl(
     [notableName1, notableName3],
-    betweenNames
+    betweenNames,
+    settings
   );
 
   return (
@@ -163,7 +166,8 @@ function ResultDetail({ result }) {
             const url = buildTradeUrl3n2d(
               [notableName1, notableName3],
               matchingMiddles,
-              ench
+              ench,
+              settings
             );
 
             return (
