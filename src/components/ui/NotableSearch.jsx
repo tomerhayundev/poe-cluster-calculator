@@ -5,15 +5,31 @@ import { getAllNotableNames } from '../../data/calculator';
  * Reusable notable search/autocomplete component.
  * Used by both Two-Notable and Single-Notable features.
  */
-export default function NotableSearch({ onSelect, currentlySelected = [], placeholder = '+ Add Notable' }) {
+export default function NotableSearch({ onSelect, currentlySelected = [], placeholder = '+ Add Notable', allowedNames = null }) {
   const [filter, setFilter] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(0);
   const containerRef = useRef(null);
   const listRef = useRef(null);
 
+  const [dropdownStyle, setDropdownStyle] = useState({});
+
+  // Compute dropdown position/max-height when opening
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    if (spaceBelow >= 160) {
+      setDropdownStyle({ top: 'calc(100% + 2px)', bottom: 'auto', maxHeight: Math.min(280, spaceBelow) + 'px' });
+    } else {
+      setDropdownStyle({ bottom: 'calc(100% + 2px)', top: 'auto', maxHeight: Math.min(280, spaceAbove) + 'px' });
+    }
+  }, [isOpen]);
+
   const allNames = getAllNotableNames();
-  const filtered = allNames.filter(
+  const pool = allowedNames ? allNames.filter((n) => allowedNames.includes(n)) : allNames;
+  const filtered = pool.filter(
     (name) =>
       name.toLowerCase().includes(filter.toLowerCase()) &&
       !currentlySelected.map((n) => n.toLowerCase()).includes(name.toLowerCase())
@@ -59,7 +75,7 @@ export default function NotableSearch({ onSelect, currentlySelected = [], placeh
       <input
         type="text"
         className="notable-search__input"
-        placeholder={placeholder}
+        placeholder={allowedNames ? `${placeholder} (${pool.length} valid)` : placeholder}
         value={filter}
         onChange={(e) => {
           setFilter(e.target.value);
@@ -69,7 +85,7 @@ export default function NotableSearch({ onSelect, currentlySelected = [], placeh
         onKeyDown={handleKeyDown}
       />
       {isOpen && filtered.length > 0 && (
-        <ul className="notable-search__dropdown" ref={listRef}>
+        <ul className="notable-search__dropdown" ref={listRef} style={dropdownStyle}>
           {filtered.slice(0, 50).map((name, idx) => (
             <li
               key={name}

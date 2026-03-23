@@ -430,7 +430,7 @@ export function getNotableTradeId(notable) {
   return megaStruct.TradeStats.Explicit[notable];
 }
 
-export function buildTradeUrl3n2d(desired, others, enchant = null, settings = {}) {
+export function buildTradeUrl3n2d(desired, others, enchant = null, settings = {}, passiveCount = 8) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
@@ -443,7 +443,7 @@ export function buildTradeUrl3n2d(desired, others, enchant = null, settings = {}
   const count_body = { type: 'count', value: { min: 1 }, filters: [] };
 
   and_body.filters.push({
-    value: { max: 8, min: 8 },
+    value: { max: passiveCount, min: passiveCount },
     id: megaStruct.TradeStats.Enchant['Adds # Passive Skills']['id'],
   });
 
@@ -481,7 +481,7 @@ export function buildTradeUrl3n2d(desired, others, enchant = null, settings = {}
  * ANY valid combination. For two-notable mode: desired1 + desired2 + any valid middle.
  * For single-notable side mode: desired + any valid companion on the other side.
  */
-export function buildMasterTradeUrl(desiredNames, allMiddleNames = [], settings = {}) {
+export function buildMasterTradeUrl(desiredNames, allMiddleNames = [], settings = {}, passiveCount = 8) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
@@ -492,9 +492,9 @@ export function buildMasterTradeUrl(desiredNames, allMiddleNames = [], settings 
 
   const and_body = { type: 'and', filters: [] };
 
-  // Must be 8-passive
+  // Filter by passive count
   and_body.filters.push({
-    value: { max: 8, min: 8 },
+    value: { max: passiveCount, min: passiveCount },
     id: megaStruct.TradeStats.Enchant['Adds # Passive Skills']['id'],
   });
 
@@ -555,7 +555,247 @@ export function buildTemplateTradeUrl(min, max, ilvlMin = null, settings = {}) {
   return getTradeBaseUrl(settings) + encodeURIComponent(JSON.stringify(base_request));
 }
 
+// --- Split Personality Mode ---
+// Given a side notable + middle notable, find all valid "other side" notables.
+// Optionally filter to a specific third notable.
+export function calculateSplitPersonality(sideNotableName, middleNotableName, thirdNotableName = null) {
+  const sideNotable = sortOrderMap[sideNotableName];
+  const middleNotable = sortOrderMap[middleNotableName];
+
+  if (!sideNotable) {
+    return { error: `Notable "${sideNotableName}" not found.`, results: [] };
+  }
+  if (!middleNotable) {
+    return { error: `Notable "${middleNotableName}" not found.`, results: [] };
+  }
+
+  if (sideNotable.Mod.CorrectGroup === middleNotable.Mod.CorrectGroup) {
+    return { error: 'Side and middle notables cannot be in the same mod group.', results: [] };
+  }
+
+  // If a specific third notable is requested, validate and check directly
+  if (thirdNotableName) {
+    const thirdNotable = sortOrderMap[thirdNotableName];
+    if (!thirdNotable) {
+      return { error: `Notable "${thirdNotableName}" not found.`, results: [] };
+    }
+
+    // The third notable is the "other side" — so side + third are positions 1 & 3,
+    // and middle must be between them
+    const validEnchants = getValidEnchants(sideNotable, thirdNotable);
+    if (validEnchants.length === 0) {
+      return { error: 'Those notables cannot roll on any of the same cluster jewel types.', results: [] };
+    }
+
+    if (!areNotablesCompatible(sideNotable, thirdNotable, middleNotable, validEnchants)) {
+      return { error: 'The middle notable cannot fit between these two side notables.', results: [] };
+    }
+
+    return {
+      error: null,
+      sideNotableName,
+      middleNotableName,
+      sideNotable,
+      middleNotable,
+      results: [{
+        otherSideName: thirdNotableName,
+        otherSide: thirdNotable,
+        validEnchants,
+        minLvl: Math.min(sideNotable.Mod.Level, middleNotable.Mod.Level, thirdNotable.Mod.Level),
+        maxLvl: Math.max(sideNotable.Mod.Level, middleNotable.Mod.Level, thirdNotable.Mod.Level),
+      }],
+    };
+  }
+
+  // No specific third — find ALL valid other-side notables
+  const results = [];
+
+  for (const otherName in sortOrderMap) {
+    if (otherName === sideNotableName || otherName === middleNotableName) continue;
+    const otherNotable = sortOrderMap[otherName];
+
+    // Other side must be different mod group from both side and middle
+    if (otherNotable.Mod.CorrectGroup === sideNotable.Mod.CorrectGroup) continue;
+    if (otherNotable.Mod.CorrectGroup === middleNotable.Mod.CorrectGroup) continue;
+
+    // side + other are the two sides (pos 1 & 3), middle is pos 2
+    const validEnchants = getValidEnchants(sideNotable, otherNotable);
+    if (validEnchants.length === 0) continue;
+
+    if (areNotablesCompatible(sideNotable, otherNotable, middleNotable, validEnchants)) {
+      results.push({
+        otherSideName: otherName,
+        otherSide: otherNotable,
+        validEnchants,
+        minLvl: Math.min(sideNotable.Mod.Level, middleNotable.Mod.Level, otherNotable.Mod.Level),
+        maxLvl: Math.max(sideNotable.Mod.Level, middleNotable.Mod.Level, otherNotable.Mod.Level),
+      });
+    }
+  }
+
+  return {
+    error: results.length === 0
+      ? 'No valid "other side" notable can complete this combination.'
+      : null,
+    sideNotableName,
+    middleNotableName,
+    sideNotable,
+    middleNotable,
+    results,
+  };
+}
+
+/**
+ * Auto-detect which notable is side vs middle by trying both orderings.
+ * Returns the best result (most valid completions).
+ */
+export function calculateSplitAuto(notable1Name, notable2Name, thirdName = null) {
+  const r1 = calculateSplitPersonality(notable1Name, notable2Name, thirdName);
+  const r2 = calculateSplitPersonality(notable2Name, notable1Name, thirdName);
+
+  const c1 = r1.error ? 0 : r1.results.length;
+  const c2 = r2.error ? 0 : r2.results.length;
+
+  if (c1 === 0 && c2 === 0) {
+    return r1.error ? r1 : r2; // both failed, return an error
+  }
+  return c1 >= c2 ? r1 : r2;
+}
+
+// --- Notable Info (for tooltips) ---
+export function getNotableInfo(notableName) {
+  const notable = sortOrderMap[notableName];
+  if (!notable) return null;
+
+  const stats = (notable.PassiveSkill?.Stats || []).map((s) => {
+    const desc = s.Description?.Description || '';
+    const value = s.Description?.Value;
+    return desc.replace('#', value != null ? String(value) : '#');
+  });
+
+  const enchantTypes = notable.Enchantments.map((ench) => getEnchantKey(ench));
+
+  return {
+    name: notableName,
+    ilvl: notable.Mod.Level,
+    isSuffix: isSuffix(notable),
+    rid: notable.Stat._rid,
+    stats,
+    enchantTypes,
+  };
+}
+
 // --- Get all notable names ---
 export function getAllNotableNames() {
   return Object.keys(sortOrderMap).sort();
+}
+
+// --- Smart Mode: filtering helpers for Split Personality ---
+
+/**
+ * Given a selected side notable, return all notable names that can be a valid middle.
+ * A candidate middle is valid if there exists at least one "other side" notable
+ * that completes a valid trio (side + other as pos 1&3, candidate as pos 2).
+ */
+export function getValidMiddlesForSide(sideName) {
+  const side = sortOrderMap[sideName];
+  if (!side) return [];
+
+  const allNames = Object.keys(sortOrderMap);
+  const validMiddles = [];
+
+  for (const midName of allNames) {
+    if (midName === sideName) continue;
+    const mid = sortOrderMap[midName];
+    if (mid.Mod.CorrectGroup === side.Mod.CorrectGroup) continue;
+
+    // Check if ANY other-side notable completes a valid trio
+    for (const otherName of allNames) {
+      if (otherName === sideName || otherName === midName) continue;
+      const other = sortOrderMap[otherName];
+      if (other.Mod.CorrectGroup === side.Mod.CorrectGroup) continue;
+      if (other.Mod.CorrectGroup === mid.Mod.CorrectGroup) continue;
+
+      const validEnchants = getValidEnchants(side, other);
+      if (validEnchants.length === 0) continue;
+
+      if (areNotablesCompatible(side, other, mid, validEnchants)) {
+        validMiddles.push(midName);
+        break; // one valid other-side is enough
+      }
+    }
+  }
+
+  return validMiddles;
+}
+
+/**
+ * Given a selected middle notable, return all notable names that can be a valid side.
+ * A candidate side is valid if there exists at least one "other side" notable
+ * that completes a valid trio (candidate + other as pos 1&3, middle as pos 2).
+ */
+export function getValidSidesForMiddle(middleName) {
+  const mid = sortOrderMap[middleName];
+  if (!mid) return [];
+
+  const allNames = Object.keys(sortOrderMap);
+  const validSides = [];
+
+  for (const sideName of allNames) {
+    if (sideName === middleName) continue;
+    const side = sortOrderMap[sideName];
+    if (side.Mod.CorrectGroup === mid.Mod.CorrectGroup) continue;
+
+    for (const otherName of allNames) {
+      if (otherName === sideName || otherName === middleName) continue;
+      const other = sortOrderMap[otherName];
+      if (other.Mod.CorrectGroup === side.Mod.CorrectGroup) continue;
+      if (other.Mod.CorrectGroup === mid.Mod.CorrectGroup) continue;
+
+      const validEnchants = getValidEnchants(side, other);
+      if (validEnchants.length === 0) continue;
+
+      if (areNotablesCompatible(side, other, mid, validEnchants)) {
+        validSides.push(sideName);
+        break;
+      }
+    }
+  }
+
+  return validSides;
+}
+
+/**
+ * Given one selected side notable, return all other notables that can be the other side
+ * (different mod group, shared enchantments, at least one valid middle exists).
+ * Used for Smart Mode in Two Sides mode.
+ */
+export function getValidPairsForSide(sideName) {
+  const side = sortOrderMap[sideName];
+  if (!side) return [];
+
+  const allNames = Object.keys(sortOrderMap);
+  const validPairs = [];
+
+  for (const otherName of allNames) {
+    if (otherName === sideName) continue;
+    const other = sortOrderMap[otherName];
+    if (other.Mod.CorrectGroup === side.Mod.CorrectGroup) continue;
+
+    const validEnchants = getValidEnchants(side, other);
+    if (validEnchants.length === 0) continue;
+
+    // Check if at least one middle notable exists between them
+    let hasMiddle = false;
+    for (const midName of allNames) {
+      if (midName === sideName || midName === otherName) continue;
+      if (areNotablesCompatible(side, other, sortOrderMap[midName], validEnchants)) {
+        hasMiddle = true;
+        break;
+      }
+    }
+    if (hasMiddle) validPairs.push(otherName);
+  }
+
+  return validPairs;
 }

@@ -1,18 +1,96 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import NotableSearch from '../../components/ui/NotableSearch';
 import SelectedNotablesList from '../../components/ui/SelectedNotablesList';
 import TwoNotableResults from './TwoNotableResults';
 import SingleNotableResults from '../single-notable/SingleNotableResults';
-import { calculateTwoNotables, calculateSingleNotable } from '../../data/calculator';
+import SplitPersonalityResults from './SplitPersonalityResults';
+import { calculateTwoNotables, calculateSingleNotable, calculateSplitAuto, getValidMiddlesForSide, getValidSidesForMiddle, getValidPairsForSide } from '../../data/calculator';
 import ClusterDiagram from '../../components/ui/ClusterDiagram';
+import PopularClusters from '../../components/ui/PopularClusters';
+import Toast from '../../components/ui/Toast';
+import { readUrlState, buildShareUrl, copyToClipboard } from '../../hooks/useUrlState';
+
+const MODES = [
+  { value: 'two-sides', label: 'Two Sides', desc: 'Select notables for positions 1 & 3' },
+  { value: 'split', label: 'Side + Middle', desc: 'Pick one side + one middle notable', badge: 'Split Personality' },
+  { value: 'single', label: 'Single Notable', desc: 'Explore options for one notable' },
+];
+
+const PASSIVE_COUNTS = [8, 9, 10, 11, 12];
 
 export default function TwoNotablePage() {
+  // Mode state
+  const [mode, setMode] = useState('two-sides');
+  const [passiveCount, setPassiveCount] = useState(8);
+
+  // Two Sides mode state
   const [selected, setSelected] = useState([]);
   const [disabled, setDisabled] = useState([]);
-  const [results, setResults] = useState(null);
-  const [singlePosition, setSinglePosition] = useState('side');
-  const [isCalculating, setIsCalculating] = useState(false);
 
+  // Single notable mode state
+  const [singlePosition, setSinglePosition] = useState('side');
+
+  // Split Personality mode state — just an ordered list of picks (up to 3)
+  const [splitPicks, setSplitPicks] = useState([]);
+  const [smartMode, setSmartMode] = useState(true);
+
+  // Shared state
+  const [results, setResults] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [toast, setToast] = useState(null);
+  const initializedFromUrl = useRef(false);
+
+  // Load state from URL hash on mount
+  useEffect(() => {
+    if (initializedFromUrl.current) return;
+    const urlState = readUrlState();
+    if (!urlState) return;
+    initializedFromUrl.current = true;
+
+    setMode(urlState.mode);
+    setPassiveCount(urlState.passiveCount);
+
+    if (urlState.mode === 'two-sides' && urlState.selected) {
+      setSelected(urlState.selected);
+    } else if (urlState.mode === 'split') {
+      setSplitPicks([urlState.splitSide, urlState.splitMiddle, urlState.splitThird].filter(Boolean));
+    } else if (urlState.mode === 'single' && urlState.selected) {
+      setSelected(urlState.selected);
+      setSinglePosition(urlState.singlePosition || 'side');
+    }
+    // Clear the hash after loading
+    window.history.replaceState(null, '', window.location.pathname);
+  }, []);
+
+  // --- Smart Mode filtering ---
+  // Split Personality — after first pick, filter to valid companions
+  const allowedSplitNext = useMemo(() => {
+    if (!smartMode || splitPicks.length === 0) return null;
+    if (splitPicks.length === 1) {
+      // Second pick: any notable that can form a valid trio with the first
+      return getValidPairsForSide(splitPicks[0]);
+    }
+    // Third pick is optional and unfiltered (results will validate)
+    return null;
+  }, [smartMode, splitPicks.join(',')]);
+
+  // Two Sides — after first notable selected, filter to valid pairs
+  const enabled = selected.filter((n) => !disabled.includes(n));
+  const allowedTwoSides = useMemo(() => {
+    if (!smartMode || enabled.length === 0) return null;
+    let pool = null;
+    for (const name of enabled) {
+      const pairs = getValidPairsForSide(name);
+      if (!pool) {
+        pool = new Set(pairs);
+      } else {
+        pool = new Set(pairs.filter((p) => pool.has(p)));
+      }
+    }
+    return pool ? [...pool] : null;
+  }, [smartMode, enabled.join(',')]);
+
+  // --- Two Sides handlers ---
   function addNotable(name) {
     if (!selected.includes(name)) {
       setSelected((prev) => [...prev, name]);
@@ -33,11 +111,29 @@ export default function TwoNotablePage() {
     setResults(null);
   }
 
+  // --- Mode switch ---
+  function handleModeChange(newMode) {
+    setMode(newMode);
+    setResults(null);
+  }
+
+  // --- Calculate ---
   function handleCalculate() {
+    if (mode === 'split') {
+      if (splitPicks.length < 2) return;
+      setIsCalculating(true);
+      setTimeout(() => {
+        const result = calculateSplitAuto(splitPicks[0], splitPicks[1], splitPicks[2] || null);
+        setResults({ mode: 'split', data: result });
+        setIsCalculating(false);
+      }, 50);
+      return;
+    }
+
     const enabled = selected.filter((n) => !disabled.includes(n));
     if (enabled.length === 0) return;
 
-    if (enabled.length === 1) {
+    if (mode === 'single') {
       setIsCalculating(true);
       setTimeout(() => {
         const result = calculateSingleNotable(enabled[0], singlePosition);
@@ -45,16 +141,62 @@ export default function TwoNotablePage() {
         setIsCalculating(false);
       }, 50);
     } else {
+      if (enabled.length < 2) return;
       const result = calculateTwoNotables(enabled);
       setResults({ mode: 'multi', data: result });
     }
   }
 
-  const enabledCount = selected.filter((n) => !disabled.includes(n)).length;
-  const isSingleMode = enabledCount === 1;
+  // --- Share handler ---
+  async function handleShare() {
+    const enabled = selected.filter((n) => !disabled.includes(n));
+    const url = buildShareUrl({
+      mode,
+      selected: enabled,
+      splitSide: splitPicks[0] || null,
+      splitMiddle: splitPicks[1] || null,
+      splitThird: splitPicks[2] || null,
+      singlePosition,
+      passiveCount,
+    });
+    const ok = await copyToClipboard(url);
+    setToast(ok ? 'Link copied!' : 'Failed to copy');
+  }
+
+  // --- Derived state ---
+  const enabledCount = enabled.length;
+  const isSingleMode = mode === 'single';
   const validResults = results?.mode === 'multi'
     ? results.data?.results?.filter((r) => r.success) || []
     : results?.data?.results || [];
+
+  // Can we calculate?
+  let canCalculate = false;
+  if (mode === 'split') {
+    canCalculate = splitPicks.length >= 2;
+  } else if (mode === 'single') {
+    canCalculate = enabledCount >= 1;
+  } else {
+    canCalculate = enabledCount >= 2;
+  }
+
+  // Button label
+  let buttonLabel = 'Select a notable';
+  if (mode === 'split') {
+    if (splitPicks.length >= 2) buttonLabel = 'Calculate';
+    else buttonLabel = `Select ${2 - splitPicks.length} more notable${splitPicks.length === 1 ? '' : 's'}`;
+  } else if (mode === 'single') {
+    if (enabledCount === 0) buttonLabel = 'Select a notable';
+    else buttonLabel = `Find ${singlePosition === 'side' ? 'Side' : 'Middle'} Pairings`;
+  } else {
+    if (enabledCount < 2) buttonLabel = 'Select 2 notables';
+    else buttonLabel = 'Calculate';
+  }
+
+  // Diagram mode
+  let diagramMode = 'two-sides';
+  if (mode === 'split') diagramMode = 'split';
+  else if (isSingleMode && singlePosition === 'middle') diagramMode = 'single-middle';
 
   return (
     <div className="page-columns">
@@ -66,98 +208,211 @@ export default function TwoNotablePage() {
             <div className="hero-label">Cluster Jewel Analysis</div>
             <h1 className="hero-title">Find Your Perfect Middle</h1>
             <p className="hero-desc">
-              {isSingleMode
-                ? 'One notable selected — choose position, then calculate.'
-                : 'Select notables for positions 1 & 3 to find valid middles.'}
+              {mode === 'split'
+                ? 'Pick a side + middle notable to find valid completions.'
+                : isSingleMode
+                  ? 'One notable selected — choose position, then calculate.'
+                  : 'Select notables for positions 1 & 3 to find valid middles.'}
             </p>
           </div>
           <div className="compact-hero__diagram">
-            <ClusterDiagram size={120} />
+            <ClusterDiagram size={120} mode={diagramMode} passiveCount={passiveCount} />
             <div className="diagram-legend-compact">
-              <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
-              <span className="legend-item legend-item--middle">2 = Undesired</span>
+              {mode === 'split' ? (
+                <>
+                  <span className="legend-item legend-item--desired">S = Side</span>
+                  <span className="legend-item legend-item--split-middle">M = Middle</span>
+                  <span className="legend-item legend-item--unknown">? = Any</span>
+                </>
+              ) : (
+                <>
+                  <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
+                  <span className="legend-item legend-item--middle">2 = Undesired</span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Notable Selection */}
+        {/* Mode Toggle */}
+        <div className="section">
+          <div className="section-header">
+            <span className="section-icon">◆</span>
+            <h3 className="section-title">Mode</h3>
+          </div>
+          <div className="mode-toggle">
+            {MODES.map((m) => (
+              <button
+                key={m.value}
+                className={`mode-btn ${mode === m.value ? 'mode-btn--active' : ''}`}
+                onClick={() => handleModeChange(m.value)}
+              >
+                <span className="mode-btn__label">{m.label}</span>
+                {m.badge && (
+                  <span className="mode-btn__badge">{m.badge}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Passive Count Selector */}
+          <div className="passive-count-row">
+            <label className="passive-count-label">Passives:</label>
+            <div className="passive-count-options">
+              {PASSIVE_COUNTS.map((n) => (
+                <button
+                  key={n}
+                  className={`passive-btn ${passiveCount === n ? 'passive-btn--active' : ''}`}
+                  onClick={() => { setPassiveCount(n); setResults(null); }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Notable Selection — varies by mode */}
         <div className="section">
           <div className="section-header">
             <span className="section-icon">◆</span>
             <h3 className="section-title">Notable Selection</h3>
-            <div className="hero-stats" style={{ marginLeft: 'auto' }}>
-              <div className="stat-block">
-                <span className="stat-label">Selected</span>
-                <span className="stat-value">{selected.length}</span>
+            <div className="section-header__right">
+              <div className="smart-toggle">
+                <button
+                  className={`smart-toggle__btn ${smartMode ? 'smart-toggle__btn--active' : ''}`}
+                  onClick={() => setSmartMode(true)}
+                >Smart</button>
+                <button
+                  className={`smart-toggle__btn ${!smartMode ? 'smart-toggle__btn--active' : ''}`}
+                  onClick={() => setSmartMode(false)}
+                >Sandbox</button>
               </div>
-              <div className="stat-block">
-                <span className="stat-label">Enabled</span>
-                <span className="stat-value">{enabledCount}</span>
-              </div>
+              {mode !== 'split' && enabledCount > 0 && (
+                <span className="notable-count-badge">
+                  {enabledCount} active
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="input-grid">
-            <div className="input-main">
-              <NotableSearch
-                onSelect={addNotable}
-                currentlySelected={selected}
-                placeholder="Search and add a notable…"
-              />
-              <SelectedNotablesList
-                selected={selected}
-                disabled={disabled}
-                onRemove={removeNotable}
-                onToggle={toggleNotable}
-              />
-            </div>
-
-            <div className="input-action">
-              {isSingleMode && (
-                <div className="position-selector">
-                  <label className="position-label">I want this notable on:</label>
-                  <div className="position-options">
-                    <button
-                      className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
-                      onClick={() => { setSinglePosition('side'); setResults(null); }}
-                    >
-                      <span className="position-btn__icon">◆</span>
-                      <span className="position-btn__text">
-                        <strong>Side (1 or 3)</strong>
-                        <small>Desired — needs companion</small>
+          {mode === 'split' ? (
+            /* Split Personality — pick notables, auto-detect side/middle */
+            <div className="split-inputs">
+              {splitPicks.length < 3 && (
+                <NotableSearch
+                  onSelect={(name) => {
+                    setSplitPicks((prev) => [...prev, name]);
+                    setResults(null);
+                  }}
+                  currentlySelected={splitPicks}
+                  placeholder={
+                    splitPicks.length === 0 ? 'Search first notable…'
+                    : splitPicks.length === 1 ? 'Search second notable…'
+                    : 'Search third notable (optional)…'
+                  }
+                  allowedNames={allowedSplitNext}
+                />
+              )}
+              {splitPicks.length > 0 && (
+                <div className="split-selected-list">
+                  {splitPicks.map((name, i) => (
+                    <div className="split-selected" key={name}>
+                      <span className={`split-role-tag ${i < 2 ? 'split-role-tag--side' : 'split-role-tag--middle'}`}>
+                        {i === 0 ? '#1' : i === 1 ? '#2' : 'Filter'}
                       </span>
-                    </button>
-                    <button
-                      className={`position-btn ${singlePosition === 'middle' ? 'position-btn--active' : ''}`}
-                      onClick={() => { setSinglePosition('middle'); setResults(null); }}
-                    >
-                      <span className="position-btn__icon">◇</span>
-                      <span className="position-btn__text">
-                        <strong>Middle (2)</strong>
-                        <small>Find side pairs</small>
-                      </span>
-                    </button>
-                  </div>
+                      <span className="notable-badge notable-badge--desired">{name}</span>
+                      <button className="split-remove" onClick={() => {
+                        setSplitPicks((prev) => prev.slice(0, i));
+                        setResults(null);
+                      }}>×</button>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <button
-                className="btn btn--primary btn--full"
-                onClick={handleCalculate}
-                disabled={enabledCount < 1 || isCalculating}
-              >
-                {isCalculating
-                  ? 'Calculating…'
-                  : enabledCount === 0
-                    ? 'Select a notable'
-                    : enabledCount === 1
-                      ? `Find ${singlePosition === 'side' ? 'Side' : 'Middle'} Pairings`
-                      : 'Calculate'}
-              </button>
             </div>
+          ) : (
+            /* Two Sides / Single Notable inputs */
+            <div className="input-grid">
+              <div className="input-main">
+                <NotableSearch
+                  onSelect={addNotable}
+                  currentlySelected={selected}
+                  placeholder="Search and add a notable…"
+                  allowedNames={allowedTwoSides}
+                />
+                <SelectedNotablesList
+                  selected={selected}
+                  disabled={disabled}
+                  onRemove={removeNotable}
+                  onToggle={toggleNotable}
+                />
+              </div>
+
+              <div className="input-action">
+                {isSingleMode && (
+                  <div className="position-selector">
+                    <label className="position-label">I want this notable on:</label>
+                    <div className="position-options">
+                      <button
+                        className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
+                        onClick={() => { setSinglePosition('side'); setResults(null); }}
+                      >
+                        <span className="position-btn__icon">◆</span>
+                        <span className="position-btn__text">
+                          <strong>Side (1 or 3)</strong>
+                          <small>Desired — needs companion</small>
+                        </span>
+                      </button>
+                      <button
+                        className={`position-btn ${singlePosition === 'middle' ? 'position-btn--active' : ''}`}
+                        onClick={() => { setSinglePosition('middle'); setResults(null); }}
+                      >
+                        <span className="position-btn__icon">◇</span>
+                        <span className="position-btn__text">
+                          <strong>Middle (2)</strong>
+                          <small>Find side pairs</small>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Calculate + Share buttons */}
+          <div className="calc-actions" style={{ marginTop: '12px' }}>
+            <button
+              className="btn btn--primary btn--full"
+              onClick={handleCalculate}
+              disabled={!canCalculate || isCalculating}
+            >
+              {isCalculating ? 'Calculating…' : buttonLabel}
+            </button>
+            {canCalculate && (
+              <button
+                className="btn btn--ghost share-btn"
+                onClick={handleShare}
+                title="Copy shareable link"
+              >
+                🔗
+              </button>
+            )}
           </div>
+          {toast && <Toast message={toast} onDone={() => setToast(null)} />}
         </div>
 
+        {/* Popular Clusters from poe.ninja */}
+        <PopularClusters
+          onSelectNotables={(notables) => {
+            // Auto-populate Two Sides mode with the first 2 notables
+            setMode('two-sides');
+            setSelected(notables.slice(0, 2));
+            setDisabled([]);
+            setResults(null);
+          }}
+        />
       </div>
 
       {/* RIGHT COLUMN — Results */}
@@ -172,9 +427,11 @@ export default function TwoNotablePage() {
             <div className="section-header">
               <span className="section-icon section-icon--active">◆</span>
               <h3 className="section-title">
-                {results.mode === 'single'
-                  ? `${singlePosition === 'side' ? 'Side' : 'Middle'} Pairings`
-                  : 'Analysis Results'}
+                {results.mode === 'split'
+                  ? 'Split Personality Results'
+                  : results.mode === 'single'
+                    ? `${singlePosition === 'side' ? 'Side' : 'Middle'} Pairings`
+                    : 'Analysis Results'}
               </h3>
               <div className="section-tabs">
                 <span className="tab-pill tab-pill--active">
@@ -187,10 +444,12 @@ export default function TwoNotablePage() {
               <div className="error-banner">{results.data.error}</div>
             )}
 
-            {results.mode === 'single' ? (
-              <SingleNotableResults data={results.data} />
+            {results.mode === 'split' ? (
+              <SplitPersonalityResults data={results.data} passiveCount={passiveCount} />
+            ) : results.mode === 'single' ? (
+              <SingleNotableResults data={results.data} passiveCount={passiveCount} />
             ) : (
-              <TwoNotableResults data={results.data} />
+              <TwoNotableResults data={results.data} passiveCount={passiveCount} />
             )}
           </div>
         )}

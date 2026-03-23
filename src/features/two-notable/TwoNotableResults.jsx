@@ -7,8 +7,11 @@ import {
   includesEnchant,
 } from '../../data/calculator';
 import { useTradeSettings } from '../../data/TradeSettingsContext';
+import { usePrices } from '../../data/PriceContext';
+import { getPriceForCombination, formatPrice } from '../../data/priceService';
+import NotableTooltip from '../../components/ui/NotableTooltip';
 
-export default function TwoNotableResults({ data }) {
+export default function TwoNotableResults({ data, passiveCount = 8 }) {
   const [activeTab, setActiveTab] = useState(0);
 
   if (data.error && data.results.length === 0) {
@@ -54,7 +57,7 @@ export default function TwoNotableResults({ data }) {
       )}
 
       {/* Active result */}
-      <ResultDetail result={current} />
+      <ResultDetail result={current} passiveCount={passiveCount} />
 
       {/* Failures */}
       {failures.length > 0 && (
@@ -76,7 +79,7 @@ export default function TwoNotableResults({ data }) {
   );
 }
 
-function ResultDetail({ result }) {
+function ResultDetail({ result, passiveCount = 8 }) {
   const {
     notableName1,
     notableName3,
@@ -89,24 +92,33 @@ function ResultDetail({ result }) {
 
   const [showBreakdown, setShowBreakdown] = useState(false);
   const { settings } = useTradeSettings();
+  const { priceMap } = usePrices();
+
+  // Price lookup
+  const priceInfo = getPriceForCombination(priceMap, notableName1, notableName3, betweenNames);
 
   // Build MASTER trade link — all valid middles, any enchant
   const masterUrl = buildMasterTradeUrl(
     [notableName1, notableName3],
     betweenNames,
-    settings
+    settings,
+    passiveCount
   );
 
   return (
     <div className="result-detail">
       <div className="result-pair">
         <div className="result-notable">
-          <span className="notable-badge notable-badge--desired">{notableName1}</span>
+          <NotableTooltip name={notableName1}>
+            <span className="notable-badge notable-badge--desired">{notableName1}</span>
+          </NotableTooltip>
           <span className="notable-ilvl">ilvl {notable1.Mod.Level}</span>
         </div>
         <span className="result-separator">+</span>
         <div className="result-notable">
-          <span className="notable-badge notable-badge--desired">{notableName3}</span>
+          <NotableTooltip name={notableName3}>
+            <span className="notable-badge notable-badge--desired">{notableName3}</span>
+          </NotableTooltip>
           <span className="notable-ilvl">ilvl {notable3.Mod.Level}</span>
         </div>
       </div>
@@ -122,8 +134,18 @@ function ResultDetail({ result }) {
           <span className="trade-link__icon">⚡</span>
           <span className="trade-link__content">
             <strong>Search Trade</strong>
-            <small>Find cheapest jewel across all {betweenNames.length} valid middles</small>
+            <small>Find cheapest {passiveCount}-passive jewel across all {betweenNames.length} valid middles</small>
           </span>
+          {priceInfo && (
+            <span className="trade-link__price">
+              <span className="price-badge">~{formatPrice(priceInfo.chaosValue, priceInfo.divineValue)}</span>
+              {priceInfo.sparkline !== 0 && (
+                <span className={`price-trend ${priceInfo.sparkline > 0 ? 'price-trend--up' : 'price-trend--down'}`}>
+                  {priceInfo.sparkline > 0 ? '↑' : '↓'}
+                </span>
+              )}
+            </span>
+          )}
           <span className="trade-link__arrow">↗</span>
         </a>
       </div>
@@ -135,10 +157,12 @@ function ResultDetail({ result }) {
         </h4>
         <div className="notable-chips">
           {notablesBetween.map((nObj, idx) => (
-            <span key={betweenNames[idx]} className="notable-chip notable-chip--middle">
-              {betweenNames[idx]}
-              <span className="notable-chip__ilvl">ilvl {nObj.Mod.Level}</span>
-            </span>
+            <NotableTooltip key={betweenNames[idx]} name={betweenNames[idx]}>
+              <span className="notable-chip notable-chip--middle">
+                {betweenNames[idx]}
+                <span className="notable-chip__ilvl">ilvl {nObj.Mod.Level}</span>
+              </span>
+            </NotableTooltip>
           ))}
         </div>
       </div>
@@ -167,7 +191,8 @@ function ResultDetail({ result }) {
               [notableName1, notableName3],
               matchingMiddles,
               ench,
-              settings
+              settings,
+              passiveCount
             );
 
             return (

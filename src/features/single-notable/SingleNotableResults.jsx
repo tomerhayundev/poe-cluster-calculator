@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { buildMasterTradeUrl } from '../../data/calculator';
 import { useTradeSettings } from '../../data/TradeSettingsContext';
+import NotableTooltip from '../../components/ui/NotableTooltip';
 
-export default function SingleNotableResults({ data }) {
+export default function SingleNotableResults({ data, passiveCount = 8 }) {
   if (data.error) {
     return <div className="result-error">{data.error}</div>;
   }
 
   if (data.position === 'side') {
-    return <SideResults data={data} />;
+    return <SideResults data={data} passiveCount={passiveCount} />;
   }
 
-  return <MiddleResults data={data} />;
+  return <MiddleResults data={data} passiveCount={passiveCount} />;
 }
 
-function SideResults({ data }) {
+function SideResults({ data, passiveCount = 8 }) {
   const [search, setSearch] = useState('');
   const [showBreakdown, setShowBreakdown] = useState(false);
   const { settings } = useTradeSettings();
@@ -27,7 +28,7 @@ function SideResults({ data }) {
 
   // Collect ALL unique partner names for the master trade link
   const allPartnerNames = data.results.map((r) => r.partnerName);
-  const masterUrl = buildMasterTradeUrl([data.notableName], allPartnerNames, settings);
+  const masterUrl = buildMasterTradeUrl([data.notableName], allPartnerNames, settings, passiveCount);
 
   return (
     <div className="single-results">
@@ -81,9 +82,11 @@ function SideResults({ data }) {
           {displayed.map((r) => (
             <details key={r.partnerName} className="pairing-card">
               <summary className="pairing-card__header">
-                <span className="notable-badge notable-badge--desired">
-                  {r.partnerName}
-                </span>
+                <NotableTooltip name={r.partnerName}>
+                  <span className="notable-badge notable-badge--desired">
+                    {r.partnerName}
+                  </span>
+                </NotableTooltip>
                 <span className="pairing-card__meta">
                   ilvl {r.partner.Mod.Level} · {r.middleCount} middle option
                   {r.middleCount !== 1 ? 's' : ''}
@@ -93,9 +96,11 @@ function SideResults({ data }) {
                 <h5>Possible middles:</h5>
                 <div className="notable-chips">
                   {r.middleNames.map((mn) => (
-                    <span key={mn} className="notable-chip notable-chip--middle">
-                      {mn}
-                    </span>
+                    <NotableTooltip key={mn} name={mn}>
+                      <span className="notable-chip notable-chip--middle">
+                        {mn}
+                      </span>
+                    </NotableTooltip>
                   ))}
                 </div>
               </div>
@@ -116,7 +121,7 @@ function SideResults({ data }) {
   );
 }
 
-function MiddleResults({ data }) {
+function MiddleResults({ data, passiveCount = 8 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const { settings } = useTradeSettings();
 
@@ -126,7 +131,7 @@ function MiddleResults({ data }) {
     allSideNames.add(r.sideName1);
     allSideNames.add(r.sideName3);
   }
-  const masterUrl = buildMasterTradeUrl([data.notableName], [...allSideNames], settings);
+  const masterUrl = buildMasterTradeUrl([data.notableName], [...allSideNames], settings, passiveCount);
 
   const displayed = showBreakdown ? data.results : data.results.slice(0, 30);
 
@@ -169,13 +174,17 @@ function MiddleResults({ data }) {
         <div className="pairing-list">
           {displayed.map((r, idx) => (
             <div key={idx} className="pairing-row">
-              <span className="notable-badge notable-badge--desired">
-                {r.sideName1}
-              </span>
+              <NotableTooltip name={r.sideName1}>
+                <span className="notable-badge notable-badge--desired">
+                  {r.sideName1}
+                </span>
+              </NotableTooltip>
               <span className="pairing-row__sep">+</span>
-              <span className="notable-badge notable-badge--desired">
-                {r.sideName3}
-              </span>
+              <NotableTooltip name={r.sideName3}>
+                <span className="notable-badge notable-badge--desired">
+                  {r.sideName3}
+                </span>
+              </NotableTooltip>
             </div>
           ))}
         </div>
