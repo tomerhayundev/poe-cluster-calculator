@@ -3,7 +3,7 @@ import NotableSearch from '../../components/ui/NotableSearch';
 import SelectedNotablesList from '../../components/ui/SelectedNotablesList';
 import TwoNotableResults from './TwoNotableResults';
 import { calculateTwoNotables } from '../../data/calculator';
-import diagram from '../../assets/diagram.png';
+import ClusterDiagram from '../../components/ui/ClusterDiagram';
 
 export default function TwoNotablePage() {
   const [selected, setSelected] = useState([]);
@@ -54,10 +54,11 @@ export default function TwoNotablePage() {
           </div>
           <div className="panel-body">
             <div className="diagram-section">
-              <img src={diagram} alt="Cluster jewel positions diagram" className="diagram-img" />
+              <ClusterDiagram size={140} />
               <div className="diagram-legend">
-                <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
+                <span className="legend-item legend-item--desired">1 & 3 = Desired notables</span>
                 <span className="legend-item legend-item--middle">2 = Undesired middle</span>
+                <span className="legend-item" style={{color: '#c8a964', fontSize: '11px'}}>◆ = Jewel socket</span>
               </div>
             </div>
 
