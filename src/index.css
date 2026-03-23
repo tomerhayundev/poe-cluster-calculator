@@ -674,7 +674,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-sm);
   margin-bottom: 16px;
   box-shadow: var(--shadow-step);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .section--results {
@@ -760,7 +760,7 @@ h1, h2, h3, h4, h5, h6 {
 .panel {
   background: var(--surface-container-low);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow-step);
 }
 

@@ -21,9 +21,9 @@ export default function NotableSearch({ onSelect, currentlySelected = [], placeh
     const spaceBelow = window.innerHeight - rect.bottom - 8;
     const spaceAbove = rect.top - 8;
     if (spaceBelow >= 160) {
-      setDropdownStyle({ top: 'calc(100% + 2px)', bottom: 'auto', maxHeight: Math.min(280, spaceBelow) + 'px' });
+      setDropdownStyle({ top: 'calc(100% + 2px)', bottom: 'auto', maxHeight: Math.min(400, spaceBelow) + 'px' });
     } else {
-      setDropdownStyle({ bottom: 'calc(100% + 2px)', top: 'auto', maxHeight: Math.min(280, spaceAbove) + 'px' });
+      setDropdownStyle({ bottom: 'calc(100% + 2px)', top: 'auto', maxHeight: Math.min(400, spaceAbove) + 'px' });
     }
   }, [isOpen]);
 
@@ -64,15 +64,19 @@ export default function NotableSearch({ onSelect, currentlySelected = [], placeh
     }
   }
 
+  const inputRef = useRef(null);
+
   function selectItem(name) {
     onSelect(name);
     setFilter('');
     setIsOpen(false);
+    if (inputRef.current) inputRef.current.blur();
   }
 
   return (
     <div className="notable-search" ref={containerRef}>
       <input
+        ref={inputRef}
         type="text"
         className="notable-search__input"
         placeholder={allowedNames ? `${placeholder} (${pool.length} valid)` : placeholder}
