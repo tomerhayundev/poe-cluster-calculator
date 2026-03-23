@@ -15,8 +15,8 @@ const FALLBACK_LEAGUES = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'buyout', label: 'Instant Buyout and In Person' },
-  { value: 'buyout_only', label: 'Instant Buyout' },
+  { value: 'available', label: 'Instant Buyout and In Person' },
+  { value: 'securable', label: 'Instant Buyout' },
   { value: 'onlineleague', label: 'In Person (Online in League)' },
   { value: 'online', label: 'In Person (Online)' },
   { value: 'any', label: 'Any' },
@@ -29,7 +29,7 @@ export function TradeSettingsProvider({ children }) {
   const [settings, setSettings] = useState({
     platform: 'pc',
     league: FALLBACK_LEAGUES[0].value,
-    status: 'buyout',
+    status: 'securable',
   });
 
   // Fetch live leagues from PoE trade API (runs in user's browser)
