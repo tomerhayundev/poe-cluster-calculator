@@ -527,7 +527,7 @@ h1, h2, h3, h4, h5, h6 {
 .mode-setup__controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 .mode-setup__diagram {
   display: flex;
