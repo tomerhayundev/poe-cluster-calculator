@@ -73,6 +73,10 @@ export default function TwoNotablePage() {
           </div>
           <div className="compact-hero__diagram">
             <ClusterDiagram size={120} />
+            <div className="diagram-legend-compact">
+              <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
+              <span className="legend-item legend-item--middle">2 = Undesired</span>
+            </div>
           </div>
         </div>
 
@@ -154,11 +158,6 @@ export default function TwoNotablePage() {
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="diagram-legend-inline">
-          <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
-          <span className="legend-item legend-item--middle">2 = Undesired</span>
-        </div>
       </div>
 
       {/* RIGHT COLUMN — Results */}

@@ -521,6 +521,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 .compact-hero__diagram {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.diagram-legend-compact {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
 }
 
 /* Legend inline */
