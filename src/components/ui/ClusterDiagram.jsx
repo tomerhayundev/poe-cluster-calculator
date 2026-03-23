@@ -38,23 +38,25 @@ export default function ClusterDiagram({ size = 200, mode = 'two-sides', passive
 
   // Determine notable colors based on mode
   function getNotableStyle(type) {
+    const green = { fill: 'url(#desired-grad)', stroke: '#4ac864', filter: 'url(#glow-green)' };
+    const red = { fill: 'url(#undesired-grad)', stroke: '#c84a4a', filter: 'url(#glow-red)' };
+    const grey = { fill: 'url(#small-grad)', stroke: '#888', filter: 'none' };
+
     if (mode === 'split') {
-      // Split: positions 1 (side) and 2 (middle) are desired, 3 is unknown
-      if (type === 'notable1' || type === 'notable2') {
-        return { fill: 'url(#desired-grad)', stroke: '#4ac864', filter: 'url(#glow-green)' };
-      }
-      if (type === 'notable3') {
-        return { fill: 'url(#undesired-grad)', stroke: '#c84a4a', filter: 'url(#glow-red)' };
-      }
+      // Split: positions 1 and 2 are desired, 3 is undesired
+      if (type === 'notable1' || type === 'notable2') return green;
+      if (type === 'notable3') return red;
     }
 
-    // Default: two-sides or single
-    if (type === 'notable1' || type === 'notable3') {
-      return { fill: 'url(#desired-grad)', stroke: '#4ac864', filter: 'url(#glow-green)' };
+    if (mode === 'single-middle') {
+      // Single middle: position 2 is desired (green), 1 and 3 are grey
+      if (type === 'notable2') return green;
+      return grey;
     }
-    if (type === 'notable2') {
-      return { fill: 'url(#undesired-grad)', stroke: '#c84a4a', filter: 'url(#glow-red)' };
-    }
+
+    // Default: two-sides or single-side — 1 & 3 desired, 2 undesired
+    if (type === 'notable1' || type === 'notable3') return green;
+    if (type === 'notable2') return red;
     return {};
   }
 

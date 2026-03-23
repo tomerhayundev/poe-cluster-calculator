@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import NotableSearch from '../../components/ui/NotableSearch';
 import SelectedNotablesList from '../../components/ui/SelectedNotablesList';
 import TwoNotableResults from './TwoNotableResults';
@@ -199,8 +200,31 @@ export default function TwoNotablePage() {
   if (mode === 'split') diagramMode = 'split';
   else if (isSingleMode && singlePosition === 'middle') diagramMode = 'single-middle';
 
+  const [topbarSlot, setTopbarSlot] = useState(null);
+  useEffect(() => {
+    setTopbarSlot(document.getElementById('topbar-slot'));
+  }, []);
+
   return (
     <div className="page-columns">
+      {/* Smart/Sandbox toggle in topbar via portal */}
+      {topbarSlot && createPortal(
+        <div className="smart-toggle-header">
+          <div className="smart-toggle">
+            <button
+              className={`smart-toggle__btn ${smartMode ? 'smart-toggle__btn--active' : ''}`}
+              onClick={() => setSmartMode(true)}
+            >Smart</button>
+            <button
+              className={`smart-toggle__btn ${!smartMode ? 'smart-toggle__btn--active' : ''}`}
+              onClick={() => setSmartMode(false)}
+            >Sandbox</button>
+          </div>
+          <HelpTip text="Smart filters dropdowns to only show valid combinations. Sandbox shows all notables without restrictions." />
+        </div>,
+        topbarSlot
+      )}
+
       {/* LEFT COLUMN — Input */}
       <div className="col-input">
         {/* Compact hero */}
@@ -279,24 +303,11 @@ export default function TwoNotablePage() {
           <div className="section-header">
             <span className="section-icon">◆</span>
             <h3 className="section-title">Notable Selection</h3>
-            <div className="section-header__right">
-              <div className="smart-toggle">
-                <button
-                  className={`smart-toggle__btn ${smartMode ? 'smart-toggle__btn--active' : ''}`}
-                  onClick={() => setSmartMode(true)}
-                >Smart</button>
-                <button
-                  className={`smart-toggle__btn ${!smartMode ? 'smart-toggle__btn--active' : ''}`}
-                  onClick={() => setSmartMode(false)}
-                >Sandbox</button>
-              </div>
-              <HelpTip text="Smart filters dropdowns to only show valid combinations. Sandbox shows all notables without restrictions." />
-              {mode !== 'split' && enabledCount > 0 && (
-                <span className="notable-count-badge">
-                  {enabledCount} active
-                </span>
-              )}
-            </div>
+            {mode !== 'split' && enabledCount > 0 && (
+              <span className="notable-count-badge">
+                {enabledCount} active
+              </span>
+            )}
           </div>
 
           {mode === 'split' ? (

@@ -64,6 +64,7 @@ export default function Layout({ children }) {
       <div className="main-area">
         <header className="topbar">
           <h2 className="topbar-title">{pageTitle}</h2>
+          <div id="topbar-slot"></div>
           <div className="topbar-right">
             <TradeSettings />
             <a
