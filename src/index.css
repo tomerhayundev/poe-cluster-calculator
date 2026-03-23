@@ -417,14 +417,34 @@ h1, h2, h3, h4, h5, h6 {
   border-top: 1px solid rgba(78, 70, 57, 0.08);
 }
 
-.footer-status {
+.footer-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+.footer-sep {
+  color: var(--outline-variant);
+  opacity: 0.5;
+}
+
+.footer-league {
+  color: var(--outline);
+}
+
 .footer-credit a {
   color: var(--outline);
+}
+
+.footer-disclaimer {
+  color: var(--outline-variant);
+}
+
+.footer-version {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--outline-variant);
+  letter-spacing: 0.05em;
 }
 
 /* --- Two-Column Page Layout --- */

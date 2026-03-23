@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import TradeSettings from '../ui/TradeSettings';
 import { useTradeSettings } from '../../data/TradeSettingsContext';
+import { APP_VERSION } from '../../data/version';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Calculator', icon: '◆' },
@@ -21,13 +22,12 @@ export default function Layout({ children }) {
 
   return (
     <div className="app-shell">
-      {/* Narrow Sidebar — "Command Rail" */}
+      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <span className="brand-mark">CM</span>
           <div>
             <h1 className="brand-title">Cluster<br/>Master</h1>
-            <span className="brand-version">v1.0</span>
           </div>
         </div>
 
@@ -47,20 +47,11 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <div className="sidebar-status">
-            <span className="status-dot"></span>
-            <span>Online</span>
-          </div>
-          <p className="disclaimer">
-            No affiliation with GGG
-          </p>
-        </div>
+        <div className="sidebar-footer" />
       </aside>
 
       {/* Main Area */}
       <div className="main-area">
-        {/* Top Bar */}
         <header className="topbar">
           <h2 className="topbar-title">{pageTitle}</h2>
           <div className="topbar-right">
@@ -77,20 +68,30 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        {/* Content */}
         <main className="main-content">{children}</main>
 
         {/* Footer */}
         <footer className="app-footer">
-          <span className="footer-status">
-            <span className="status-dot"></span> {settings.league} League
-          </span>
-          <span className="footer-credit">
-            Logic:{' '}
-            <a href="https://github.com/TheodoreJBieber/PoEClusterJewelCalculator" target="_blank" rel="noreferrer">
-              TheodoreJBieber
-            </a>
-          </span>
+          <div className="footer-left">
+            <span className="footer-league">{settings.league} League</span>
+            <span className="footer-sep">·</span>
+            <span className="footer-credit">
+              Created by{' '}
+              <a href="https://poe.tichoh.com" target="_blank" rel="noreferrer">
+                Tichoh
+              </a>
+            </span>
+            <span className="footer-sep">·</span>
+            <span className="footer-credit">
+              Logic by{' '}
+              <a href="https://github.com/TheodoreJBieber/PoEClusterJewelCalculator" target="_blank" rel="noreferrer">
+                TheodoreJBieber
+              </a>
+            </span>
+            <span className="footer-sep">·</span>
+            <span className="footer-disclaimer">No affiliation with GGG</span>
+          </div>
+          <span className="footer-version">v{APP_VERSION}</span>
         </footer>
       </div>
     </div>
