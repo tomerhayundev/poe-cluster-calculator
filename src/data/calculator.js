@@ -260,8 +260,17 @@ export function calculateTwoNotables(selectedNotables) {
 }
 
 // --- NEW FEATURE: Single Notable Calculation ---
-// Given ONE notable and a desired position (side=1/3 or middle=2),
-// find all compatible partners.
+// Given ONE notable, automatically detect if user wants it on a side (pos 1/3)
+// or in the middle (pos 2). The logic:
+//
+// For SIDE (pos 1 or 3): The desired notable must have either the lowest or
+// highest _rid among the 3 notables on the jewel. We need to find a companion
+// that goes on the OTHER side, such that the desired notable's _rid is NOT
+// between the companion and the middle. Then any middle whose _rid falls
+// between the two sides works.
+//
+// For MIDDLE (pos 2): The desired notable's _rid must fall between the two
+// side notables' _rids.
 
 export function calculateSingleNotable(notableName, position) {
   const notable = sortOrderMap[notableName];
@@ -269,101 +278,132 @@ export function calculateSingleNotable(notableName, position) {
     return { error: `Notable "${notableName}" not found.`, results: [] };
   }
 
-  const results = [];
-
   if (position === 'side') {
-    // User wants this notable on the side (pos 1 or 3).
-    // Find all valid pairs where this notable + another notable on the other side
-    // and show what middles are possible.
-    for (const otherName in sortOrderMap) {
-      if (otherName === notableName) continue;
-      const other = sortOrderMap[otherName];
-
-      // Skip same group
-      if (notable.Mod.CorrectGroup === other.Mod.CorrectGroup) continue;
-
-      const validEnchants = getValidEnchants(notable, other);
-      if (validEnchants.length === 0) continue;
-
-      // Find middles
-      const middles = [];
-      const middleNames = [];
-      for (const mName in sortOrderMap) {
-        const mObj = sortOrderMap[mName];
-        if (areNotablesCompatible(notable, other, mObj, validEnchants)) {
-          middles.push(mObj);
-          middleNames.push(mName);
-        }
-      }
-
-      if (middles.length > 0) {
-        results.push({
-          partnerName: otherName,
-          partner: other,
-          middleNames,
-          middles,
-          validEnchants,
-          middleCount: middles.length,
-        });
-      }
-    }
-
-    // Sort by number of middle options (most flexible first)
-    results.sort((a, b) => b.middleCount - a.middleCount);
-
-    return {
-      error: results.length === 0 ? 'No valid side-position pairings found.' : null,
-      notable,
-      notableName,
-      position,
-      results,
-    };
+    return calculateSingleNotableSide(notableName, notable);
   }
 
   if (position === 'middle') {
-    // User wants this notable in the middle (pos 2).
-    // Find all pairs of side notables where this one fits between them.
-    const pairs = [];
-
-    const allNames = Object.keys(sortOrderMap);
-    for (let i = 0; i < allNames.length; i++) {
-      const name1 = allNames[i];
-      if (name1 === notableName) continue;
-      const not1 = sortOrderMap[name1];
-
-      for (let j = i + 1; j < allNames.length; j++) {
-        const name3 = allNames[j];
-        if (name3 === notableName) continue;
-        const not3 = sortOrderMap[name3];
-
-        // Check if our notable fits between these two
-        if (not1.Mod.CorrectGroup === not3.Mod.CorrectGroup) continue;
-
-        const validEnchants = getValidEnchants(not1, not3);
-        if (validEnchants.length === 0) continue;
-
-        if (areNotablesCompatible(not1, not3, notable, validEnchants)) {
-          pairs.push({
-            sideName1: name1,
-            sideName3: name3,
-            side1: not1,
-            side3: not3,
-            validEnchants,
-          });
-        }
-      }
-    }
-
-    return {
-      error: pairs.length === 0 ? 'This notable cannot fit in the middle of any pair.' : null,
-      notable,
-      notableName,
-      position,
-      results: pairs,
-    };
+    return calculateSingleNotableMiddle(notableName, notable);
   }
 
   return { error: 'Invalid position. Use "side" or "middle".', results: [] };
+}
+
+function calculateSingleNotableSide(notableName, notable) {
+  // The desired notable is on position 1 or 3 (a side).
+  // We need to find another notable for the OTHER side, such that:
+  // 1. They share at least one enchant type
+  // 2. They are in different mod groups
+  // 3. There exists at least one valid middle notable whose _rid falls between them
+  // 4. The desired notable is NOT the middle (it must be on the outside)
+  //
+  // Key insight: in calculate3n2dCompatibility, not1 and not3 are the SIDES,
+  // and not2 is the middle. So our desired notable is not1 (or not3),
+  // and we're looking for a not3 (or not1) where middles exist.
+  // The desired notable's _rid must be OUTSIDE the range, not between.
+
+  const desiredRid = notable.Stat._rid;
+  const results = [];
+
+  for (const otherSideName in sortOrderMap) {
+    if (otherSideName === notableName) continue;
+    const otherSide = sortOrderMap[otherSideName];
+
+    // Must be different mod group
+    if (notable.Mod.CorrectGroup === otherSide.Mod.CorrectGroup) continue;
+
+    // Must share enchants
+    const validEnchants = getValidEnchants(notable, otherSide);
+    if (validEnchants.length === 0) continue;
+
+    // Now find middles that fit between our desired notable and the other side
+    // Our desired and otherSide are on positions 1 & 3 (sides)
+    const middleNames = [];
+    const middles = [];
+
+    for (const mName in sortOrderMap) {
+      if (mName === notableName || mName === otherSideName) continue;
+      const mObj = sortOrderMap[mName];
+
+      // The middle's _rid must be BETWEEN the two sides' _rids
+      // AND our desired notable must be one of the outer positions
+      if (areNotablesCompatible(notable, otherSide, mObj, validEnchants)) {
+        middleNames.push(mName);
+        middles.push(mObj);
+      }
+    }
+
+    if (middles.length > 0) {
+      results.push({
+        partnerName: otherSideName,
+        partner: otherSide,
+        middleNames,
+        middles,
+        validEnchants,
+        middleCount: middles.length,
+      });
+    }
+  }
+
+  // Sort by number of middle options (most flexible combos first)
+  results.sort((a, b) => b.middleCount - a.middleCount);
+
+  return {
+    error: results.length === 0
+      ? `"${notableName}" cannot be placed on a side position with any known pairing.`
+      : null,
+    notable,
+    notableName,
+    position: 'side',
+    results,
+  };
+}
+
+function calculateSingleNotableMiddle(notableName, notable) {
+  // The desired notable is in position 2 (middle).
+  // We need to find pairs of side notables (pos 1 & 3) where the desired
+  // notable's _rid falls BETWEEN them.
+  const results = [];
+  const allNames = Object.keys(sortOrderMap);
+
+  for (let i = 0; i < allNames.length; i++) {
+    const name1 = allNames[i];
+    if (name1 === notableName) continue;
+    const not1 = sortOrderMap[name1];
+
+    for (let j = i + 1; j < allNames.length; j++) {
+      const name3 = allNames[j];
+      if (name3 === notableName) continue;
+      const not3 = sortOrderMap[name3];
+
+      // Sides must be different mod groups
+      if (not1.Mod.CorrectGroup === not3.Mod.CorrectGroup) continue;
+
+      const validEnchants = getValidEnchants(not1, not3);
+      if (validEnchants.length === 0) continue;
+
+      // Check if our notable fits as the middle between these two sides
+      if (areNotablesCompatible(not1, not3, notable, validEnchants)) {
+        results.push({
+          sideName1: name1,
+          sideName3: name3,
+          side1: not1,
+          side3: not3,
+          validEnchants,
+        });
+      }
+    }
+  }
+
+  return {
+    error: results.length === 0
+      ? `"${notableName}" cannot fit in the middle (position 2) of any pair.`
+      : null,
+    notable,
+    notableName,
+    position: 'middle',
+    results,
+  };
 }
 
 // --- Trade URL Generation ---
