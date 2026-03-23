@@ -421,7 +421,7 @@ export function buildTradeUrl3n2d(desired, others, enchant = null) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'onlineleague' },
+      status: { option: 'buyout' },
       stats: [],
     },
   };
@@ -472,7 +472,7 @@ export function buildMasterTradeUrl(desiredNames, allMiddleNames = []) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'onlineleague' },
+      status: { option: 'buyout' },
       stats: [],
     },
   };
@@ -514,7 +514,7 @@ export function buildTemplateTradeUrl(min, max, ilvlMin = null) {
   const base_request = {
     sort: { price: 'asc' },
     query: {
-      status: { option: 'onlineleague' },
+      status: { option: 'buyout' },
       stats: [],
     },
   };
