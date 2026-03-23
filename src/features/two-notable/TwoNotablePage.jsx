@@ -220,9 +220,8 @@ export default function TwoNotablePage() {
             <div className="diagram-legend-compact">
               {mode === 'split' ? (
                 <>
-                  <span className="legend-item legend-item--desired">S = Side</span>
-                  <span className="legend-item legend-item--split-middle">M = Middle</span>
-                  <span className="legend-item legend-item--unknown">? = Any</span>
+                  <span className="legend-item legend-item--desired">1 & 2 = Desired</span>
+                  <span className="legend-item legend-item--middle">3 = Undesired</span>
                 </>
               ) : (
                 <>

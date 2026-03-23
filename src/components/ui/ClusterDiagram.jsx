@@ -39,14 +39,12 @@ export default function ClusterDiagram({ size = 200, mode = 'two-sides', passive
   // Determine notable colors based on mode
   function getNotableStyle(type) {
     if (mode === 'split') {
-      if (type === 'notable1') {
+      // Split: positions 1 (side) and 2 (middle) are desired, 3 is unknown
+      if (type === 'notable1' || type === 'notable2') {
         return { fill: 'url(#desired-grad)', stroke: '#4ac864', filter: 'url(#glow-green)' };
       }
-      if (type === 'notable2') {
-        return { fill: 'url(#socket-grad)', stroke: '#c8a964', filter: 'url(#glow-gold)' };
-      }
       if (type === 'notable3') {
-        return { fill: 'url(#small-grad)', stroke: '#888', filter: 'none' };
+        return { fill: 'url(#undesired-grad)', stroke: '#c84a4a', filter: 'url(#glow-red)' };
       }
     }
 
@@ -62,9 +60,9 @@ export default function ClusterDiagram({ size = 200, mode = 'two-sides', passive
 
   function getNotableLabel(type) {
     if (mode === 'split') {
-      if (type === 'notable1') return 'S';  // Side
-      if (type === 'notable2') return 'M';  // Middle
-      if (type === 'notable3') return '?';  // Unknown other side
+      if (type === 'notable1') return '1';
+      if (type === 'notable2') return '2';
+      if (type === 'notable3') return '3';
     }
     if (type === 'notable1') return '1';
     if (type === 'notable2') return '2';

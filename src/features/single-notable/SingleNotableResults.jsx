@@ -125,79 +125,113 @@ function MiddleResults({ data, passiveCount = 8 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const { settings } = useTradeSettings();
 
-  // Collect all unique side names for master link
+  const soloResult = data.results.find((r) => r.solo);
+  const pairResults = data.results.filter((r) => !r.solo);
+
+  // Collect all unique side names for master link (skip solo)
   const allSideNames = new Set();
-  for (const r of data.results) {
+  for (const r of pairResults) {
     allSideNames.add(r.sideName1);
     allSideNames.add(r.sideName3);
   }
-  const masterUrl = buildMasterTradeUrl([data.notableName], [...allSideNames], settings, passiveCount);
 
-  const displayed = showBreakdown ? data.results : data.results.slice(0, 30);
+  // Solo trade link: just the notable on any matching cluster
+  const soloUrl = buildMasterTradeUrl([data.notableName], [], settings, passiveCount);
+  // Pairs trade link
+  const masterUrl = pairResults.length > 0
+    ? buildMasterTradeUrl([data.notableName], [...allSideNames], settings, passiveCount)
+    : null;
+
+  const displayed = showBreakdown ? pairResults : pairResults.slice(0, 30);
 
   return (
     <div className="single-results">
-      {/* MASTER Trade Link */}
-      <div className="result-section">
-        <a
-          href={masterUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="trade-link trade-link--master"
-        >
-          <span className="trade-link__icon">⚡</span>
-          <span className="trade-link__content">
-            <strong>Search Trade</strong>
-            <small>
-              Find cheapest jewel with {data.notableName} in the middle
-              across {data.results.length} valid side pairs
-            </small>
-          </span>
-          <span className="trade-link__arrow">↗</span>
-        </a>
-      </div>
+      {/* Solo option — always valid */}
+      {soloResult && (
+        <div className="result-section">
+          <a
+            href={soloUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="trade-link trade-link--master"
+          >
+            <span className="trade-link__icon">⚡</span>
+            <span className="trade-link__content">
+              <strong>Search Solo (no side notables)</strong>
+              <small>
+                Find {passiveCount}-passive jewels with just {data.notableName} — auto-middle
+              </small>
+            </span>
+            <span className="trade-link__arrow">↗</span>
+          </a>
+        </div>
+      )}
+
+      {/* Paired trade link */}
+      {masterUrl && (
+        <div className="result-section">
+          <a
+            href={masterUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="trade-link trade-link--master"
+          >
+            <span className="trade-link__icon">⚡</span>
+            <span className="trade-link__content">
+              <strong>Search with Side Pairs</strong>
+              <small>
+                Find cheapest jewel with {data.notableName} in the middle
+                across {pairResults.length} valid side pairs
+              </small>
+            </span>
+            <span className="trade-link__arrow">↗</span>
+          </a>
+        </div>
+      )}
 
       <p className="single-results__summary">
-        <strong>{data.notableName}</strong> can fit in the middle of{' '}
-        <strong>{data.results.length}</strong> side-notable pairs.
+        <strong>{data.notableName}</strong> can appear solo (auto-middle) or fit
+        in the middle of <strong>{pairResults.length}</strong> side-notable pairs.
       </p>
 
       {/* Breakdown — collapsible */}
-      <details
-        className="breakdown-section"
-        open={showBreakdown}
-        onToggle={(e) => setShowBreakdown(e.target.open)}
-      >
-        <summary className="breakdown-toggle">
-          Breakdown by pair ({data.results.length} combos)
-        </summary>
-        <div className="pairing-list">
-          {displayed.map((r, idx) => (
-            <div key={idx} className="pairing-row">
-              <NotableTooltip name={r.sideName1}>
-                <span className="notable-badge notable-badge--desired">
-                  {r.sideName1}
-                </span>
-              </NotableTooltip>
-              <span className="pairing-row__sep">+</span>
-              <NotableTooltip name={r.sideName3}>
-                <span className="notable-badge notable-badge--desired">
-                  {r.sideName3}
-                </span>
-              </NotableTooltip>
-            </div>
-          ))}
-        </div>
+      {pairResults.length > 0 && (
+        <details
+          className="breakdown-section"
+          open={showBreakdown}
+          onToggle={(e) => setShowBreakdown(e.target.open)}
+        >
+          <summary className="breakdown-toggle">
+            Breakdown by pair ({pairResults.length} combos)
+          </summary>
+          <div className="pairing-list">
+            {displayed.map((r, idx) => (
+              <div key={idx} className="pairing-row">
+                <NotableTooltip name={r.sideName1}>
+                  <span className="notable-badge notable-badge--desired">
+                    {r.sideName1}
+                  </span>
+                </NotableTooltip>
+                <span className="pairing-row__sep">+</span>
+                <NotableTooltip name={r.sideName3}>
+                  <span className="notable-badge notable-badge--desired">
+                    {r.sideName3}
+                  </span>
+                </NotableTooltip>
+              </div>
+            ))}
+          </div>
 
-        {!showBreakdown && data.results.length > 30 && (
-          <button
-            className="btn btn--ghost btn--full"
-            onClick={() => setShowBreakdown(true)}
-          >
-            Show all {data.results.length} pairs
-          </button>
-        )}
-      </details>
+          {!showBreakdown && pairResults.length > 30 && (
+            <button
+              className="btn btn--ghost btn--full"
+              onClick={() => setShowBreakdown(true)}
+            >
+              Show all {pairResults.length} pairs
+            </button>
+          )}
+        </details>
+      )}
     </div>
   );
 }

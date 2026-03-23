@@ -361,9 +361,25 @@ function calculateSingleNotableSide(notableName, notable) {
 
 function calculateSingleNotableMiddle(notableName, notable) {
   // The desired notable is in position 2 (middle).
-  // We need to find pairs of side notables (pos 1 & 3) where the desired
-  // notable's _rid falls BETWEEN them.
+  // Results include:
+  //   1. "Solo" — just this notable alone on any valid cluster (auto-middle)
+  //   2. Pairs of side notables (pos 1 & 3) where this notable's _rid falls between them
   const results = [];
+
+  // Solo option: any cluster enchant that includes this notable can roll it alone
+  // The notable is automatically in the middle position when it's the only one
+  const soloEnchants = notable.Enchantments;
+  if (soloEnchants.length > 0) {
+    results.push({
+      solo: true,
+      sideName1: null,
+      sideName3: null,
+      side1: null,
+      side3: null,
+      validEnchants: soloEnchants,
+    });
+  }
+
   const allNames = Object.keys(sortOrderMap);
 
   for (let i = 0; i < allNames.length; i++) {
@@ -385,6 +401,7 @@ function calculateSingleNotableMiddle(notableName, notable) {
       // Check if our notable fits as the middle between these two sides
       if (areNotablesCompatible(not1, not3, notable, validEnchants)) {
         results.push({
+          solo: false,
           sideName1: name1,
           sideName3: name3,
           side1: not1,
