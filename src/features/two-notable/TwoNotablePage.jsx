@@ -227,78 +227,107 @@ export default function TwoNotablePage() {
 
       {/* LEFT COLUMN — Input */}
       <div className="col-input">
-        {/* Compact hero */}
-        <div className="compact-hero">
-          <div className="compact-hero__text">
-            <div className="hero-label">Cluster Jewel Analysis</div>
-            <h1 className="hero-title">Find Your Perfect Middle</h1>
-            <p className="hero-desc">
-              {mode === 'split'
-                ? 'Pick a side + middle notable to find valid completions.'
-                : isSingleMode
-                  ? 'One notable selected — choose position, then calculate.'
-                  : 'Select notables for positions 1 & 3 to find valid middles.'}
-            </p>
-          </div>
-          <div className="compact-hero__diagram">
-            <ClusterDiagram size={120} mode={diagramMode} passiveCount={passiveCount} />
-            <div className="diagram-legend-compact">
-              {mode === 'split' ? (
-                <>
-                  <span className="legend-item legend-item--desired">1 & 2 = Desired</span>
-                  <span className="legend-item legend-item--middle">3 = Undesired</span>
-                </>
-              ) : (
-                <>
-                  <span className="legend-item legend-item--desired">1 & 3 = Desired</span>
-                  <span className="legend-item legend-item--middle">2 = Undesired</span>
-                </>
-              )}
-            </div>
-          </div>
+        {/* Block 1: Hero (title only) */}
+        <div className="hero-block">
+          <div className="hero-label">Cluster Jewel Analysis</div>
+          <h1 className="hero-title">Find Your Perfect Middle</h1>
+          <p className="hero-desc">
+            {mode === 'split'
+              ? 'Pick a side + middle notable to find valid completions.'
+              : isSingleMode
+                ? 'One notable selected — choose position, then calculate.'
+                : 'Select notables for positions 1 & 3 to find valid middles.'}
+          </p>
         </div>
 
-        {/* Mode Toggle */}
+        {/* Block 2: Mode Setup (controls + diagram side by side) */}
         <div className="section">
           <div className="section-header">
             <span className="section-icon">◆</span>
             <h3 className="section-title">Mode</h3>
             <HelpTip text="Choose how to select your notables. Two Sides picks positions 1 & 3. Side + Middle picks one of each. Single Notable explores one." />
           </div>
-          <div className="mode-toggle">
-            {MODES.map((m) => (
-              <button
-                key={m.value}
-                className={`mode-btn ${mode === m.value ? 'mode-btn--active' : ''}`}
-                onClick={() => handleModeChange(m.value)}
-              >
-                <span className="mode-btn__label">{m.label}</span>
-                {m.badge && (
-                  <span className="mode-btn__badge">{m.badge}</span>
-                )}
-              </button>
-            ))}
-          </div>
+          <div className="mode-setup">
+            <div className="mode-setup__controls">
+              <div className="mode-toggle">
+                {MODES.map((m) => (
+                  <button
+                    key={m.value}
+                    className={`mode-btn ${mode === m.value ? 'mode-btn--active' : ''}`}
+                    onClick={() => handleModeChange(m.value)}
+                  >
+                    <span className="mode-btn__label">{m.label}</span>
+                    {m.badge && (
+                      <span className="mode-btn__badge">{m.badge}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
 
-          {/* Passive Count Selector */}
-          <div className="passive-count-row">
-            <label className="passive-count-label">Passives:</label>
-            <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." />
-            <div className="passive-count-options">
-              {PASSIVE_COUNTS.map((n) => (
-                <button
-                  key={n}
-                  className={`passive-btn ${passiveCount === n ? 'passive-btn--active' : ''}`}
-                  onClick={() => { setPassiveCount(n); setResults(null); }}
-                >
-                  {n}
-                </button>
-              ))}
+              <div className="passive-count-row">
+                <label className="passive-count-label">Passives:</label>
+                <HelpTip text="Number of passive skills on the cluster jewel. Affects trade search filters and the diagram layout." />
+                <div className="passive-count-options">
+                  {PASSIVE_COUNTS.map((n) => (
+                    <button
+                      key={n}
+                      className={`passive-btn ${passiveCount === n ? 'passive-btn--active' : ''}`}
+                      onClick={() => { setPassiveCount(n); setResults(null); }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Position selector — Single Notable only */}
+              {isSingleMode && (
+                <div className="position-selector">
+                  <label className="position-label">Position: <HelpTip text="Side (1 or 3) means the notable is on the outer ring. Middle (2) means it sits between two side notables — or alone as auto-middle." /></label>
+                  <div className="position-options">
+                    <button
+                      className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
+                      onClick={() => { setSinglePosition('side'); setResults(null); }}
+                    >
+                      <span className="position-btn__icon">◆</span>
+                      <span className="position-btn__text">
+                        <strong>Side (1 or 3)</strong>
+                      </span>
+                    </button>
+                    <button
+                      className={`position-btn ${singlePosition === 'middle' ? 'position-btn--active' : ''}`}
+                      onClick={() => { setSinglePosition('middle'); setResults(null); }}
+                    >
+                      <span className="position-btn__icon">◇</span>
+                      <span className="position-btn__text">
+                        <strong>Middle (2)</strong>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mode-setup__diagram">
+              <ClusterDiagram size={140} mode={diagramMode} passiveCount={passiveCount} />
+              <div className="diagram-legend-compact">
+                {mode === 'split' ? (
+                  <>
+                    <span className="legend-item">1 & 2 = Desired</span>
+                    <span className="legend-item">3 = Undesired</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="legend-item">1 & 3 = Desired</span>
+                    <span className="legend-item">2 = Undesired</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Notable Selection — varies by mode */}
+        {/* Block 3: Notable Selection */}
         <div className="section">
           <div className="section-header">
             <span className="section-icon">◆</span>
@@ -311,7 +340,6 @@ export default function TwoNotablePage() {
           </div>
 
           {mode === 'split' ? (
-            /* Split Personality — pick notables, auto-detect side/middle */
             <div className="split-inputs">
               {splitPicks.length < 3 && (
                 <NotableSearch
@@ -346,52 +374,19 @@ export default function TwoNotablePage() {
               )}
             </div>
           ) : (
-            /* Two Sides / Single Notable inputs */
-            <div className="input-grid">
-              <div className="input-main">
-                <NotableSearch
-                  onSelect={addNotable}
-                  currentlySelected={selected}
-                  placeholder="Search and add a notable…"
-                  allowedNames={allowedTwoSides}
-                />
-                <SelectedNotablesList
-                  selected={selected}
-                  disabled={disabled}
-                  onRemove={removeNotable}
-                  onToggle={toggleNotable}
-                />
-              </div>
-
-              <div className="input-action">
-                {isSingleMode && (
-                  <div className="position-selector">
-                    <label className="position-label">I want this notable on: <HelpTip text="Side (1 or 3) means the notable is on the outer ring. Middle (2) means it sits between two side notables — or alone as auto-middle." /></label>
-                    <div className="position-options">
-                      <button
-                        className={`position-btn ${singlePosition === 'side' ? 'position-btn--active' : ''}`}
-                        onClick={() => { setSinglePosition('side'); setResults(null); }}
-                      >
-                        <span className="position-btn__icon">◆</span>
-                        <span className="position-btn__text">
-                          <strong>Side (1 or 3)</strong>
-                          <small>Desired — needs companion</small>
-                        </span>
-                      </button>
-                      <button
-                        className={`position-btn ${singlePosition === 'middle' ? 'position-btn--active' : ''}`}
-                        onClick={() => { setSinglePosition('middle'); setResults(null); }}
-                      >
-                        <span className="position-btn__icon">◇</span>
-                        <span className="position-btn__text">
-                          <strong>Middle (2)</strong>
-                          <small>Find side pairs</small>
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <div className="input-main">
+              <NotableSearch
+                onSelect={addNotable}
+                currentlySelected={selected}
+                placeholder="Search and add a notable…"
+                allowedNames={allowedTwoSides}
+              />
+              <SelectedNotablesList
+                selected={selected}
+                disabled={disabled}
+                onRemove={removeNotable}
+                onToggle={toggleNotable}
+              />
             </div>
           )}
 
